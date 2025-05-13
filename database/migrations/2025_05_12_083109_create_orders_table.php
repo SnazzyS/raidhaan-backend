@@ -12,10 +12,10 @@ return new class extends Migration {
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
-            $table->string('phone_number');
-            $table->string('address');
-            $table->enum('city', ['Male', 'Hulhumale Phase 1', 'Hulhumale Phase 2']);
+            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->enum('delivery_type', ['picukup', 'delivery']);
+            $table->enum('payment_type', ['transfer', 'cash', 'card']);
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();
         });
