@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Orders\OrderNumberGenerator;
 use App\Models\Item;
 use App\Models\Order;
 use App\Models\Customer;
@@ -52,6 +53,8 @@ class OrderController extends Controller
         $order->status = $validatedData['order']['status'];
         $order->delivery_type = $validatedData['order']['delivery_type'];
         $order->payment_method = $validatedData['order']['payment_method'];
+
+        $order->order_number = (new OrderNumberGenerator())->execute();
 
         if (isset($validatedData['order']['transfer_reference_number'])) {
             $order->transfer_reference_number = $validatedData['order']['transfer_reference_number'];
@@ -108,6 +111,10 @@ class OrderController extends Controller
         }
     
         $order->total_amount = $totalAmount;
+
+   
+
+
         $order->save();
 
         $order->items()->detach();

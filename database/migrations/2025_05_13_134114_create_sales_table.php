@@ -14,7 +14,6 @@ return new class extends Migration {
             $table->id();
             $table->integer('order_number');
             $table->enum('payment_method', ['transfer', 'cash', 'card']);
-            $table->string('transfer_reference_number')->nullable();
             $table->decimal('total', 10, 2);
             $table->timestamps();
         });
