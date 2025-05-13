@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ItemController;
+use App\Http\Controllers\SaleController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\CategoryController;
 
@@ -24,4 +25,5 @@ Route::post('orders', [OrderController::class, 'store']);
 Route::get('orders/{order}', [OrderController::class, 'show']);
 Route::put('orders/{order}', [OrderController::class, 'update']);
 Route::delete('orders/{order}', [OrderController::class, 'destroy']);
-Route::get('orders/{order}/receipt', [OrderController::class, 'receipt']);
+
+Route::get('sales', [SaleController::class, 'index']);

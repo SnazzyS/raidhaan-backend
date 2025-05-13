@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->integer('order_number');
+            $table->string('order_number');
             $table->enum('payment_method', ['transfer', 'cash', 'card']);
             $table->decimal('total', 10, 2);
             $table->timestamps();

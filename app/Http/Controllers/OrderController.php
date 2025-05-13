@@ -102,7 +102,7 @@ class OrderController extends Controller
         
         $order->status = $validatedData['order']['status'];
     
-        $order->delivery_type = $validatedData['order']['delivery_type'] === 'pickup' ? 'picukup' : $validatedData['order']['delivery_type'];
+        $order->delivery_type = $validatedData['order']['delivery_type'] === 'pickup' ? 'pickup' : $validatedData['order']['delivery_type'];
     
         $order->payment_method = $validatedData['order']['payment_method'];
     

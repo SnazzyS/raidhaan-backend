@@ -15,20 +15,6 @@ class Order extends Model
         'order_number'
     ];
 
-    protected static function booted()
-    {
-        static::updating(function ($order) {
-            if ($order->isDirty('status') && $order->status === 'completed') {
-                Sale::create([
-                    'order_number' => $order->order_number,
-                    'payment_method' => $order->payment_method,
-                    'total' => $order->total_amount
-                ]);
-            }
-        });
-    
-    }
-
     public function customer()
     {
         return $this->belongsTo(Customer::class);
