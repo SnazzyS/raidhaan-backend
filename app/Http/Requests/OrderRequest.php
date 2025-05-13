@@ -12,7 +12,7 @@ class OrderRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return false;
+        return true;
     }
 
     /**
@@ -23,13 +23,16 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_number' => 'required|string|max:7',
-            'address' => 'required|string|max:255',
-            'city' => 'required', Rule::in(['Male', 'Hulhumale Phase 1', 'Hulhumale Phase 2']),
-            'status' => 'required', Rule::in(['pending', 'processing', 'completed', 'cancelled']),
-            'items' => 'required|array|min:1',
-            'items.*.id' => 'required|exists:items,id',
-            'items.*.quantity' => 'required|integer|min:1',
+            'phone_number' => ['required', 'integer'],
+            'address' => ['required', 'string'],
+            'city' => 'required', Rule::in(['male', 'hulhumale phase 1', 'hulhumale phase 2']),
+            'order.status' => ['required', Rule::in(['pending', 'processing', 'completed', 'cancelled'])],
+            'order.delivery_type' => ['required', Rule::in(['delivery', 'pickup'])],
+            'order.payment_method' => ['required', Rule::in(['transfer', 'cash', 'card'])],
+            'order.transfer_reference_number' => ['string'],
+            'order.items' => ['required', 'array'],
+            'order.items.*.item_id' => ['required', 'integer', 'exists:items,id'],
+            'order.items.*.quantity' => ['required', 'integer']
         ];
     }
 }

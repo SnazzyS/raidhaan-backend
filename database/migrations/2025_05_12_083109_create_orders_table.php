@@ -15,7 +15,8 @@ return new class extends Migration {
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
             $table->enum('delivery_type', ['picukup', 'delivery']);
-            $table->enum('payment_type', ['transfer', 'cash', 'card']);
+            $table->enum('payment_method', ['transfer', 'cash', 'card']);
+            $table->string('transfer_reference_number')->nullable();
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();
         });

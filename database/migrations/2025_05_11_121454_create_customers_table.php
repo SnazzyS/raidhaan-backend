@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->integer('phone_number');
             $table->string('address');
-            $table->enum('city', ['Male', 'Hulhumale Phase 1', 'Hulhumale Phase 2']);
+            $table->enum('city', ['male', 'hulhumale phase 1', 'hulhumale phase 2']);
             $table->timestamps();
         });
     }
