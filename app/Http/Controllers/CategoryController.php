@@ -11,14 +11,11 @@ class CategoryController extends Controller
 {
     public function index()
     {
-        $categories = Category::all();
-
-        return response()->json($categories);
+        return response()->json(Category::with('items')->get());
     }
 
     public function store(CategoryRequest $request)
     {
-
         Category::create($request->validated());
         
         return response()->json([
@@ -27,28 +24,21 @@ class CategoryController extends Controller
 
     }
 
-    // not needed?
-    public function show(Category $category)
-    {
-        return response()->json($category);
-    }
 
-    public function update(CategoryRequest $request, Category $category)
+    public function update(Category $category, CategoryRequest $request)
     {
         $category->update($request->validated());
         
         return response()->json([
             'message' => 'Category updated successfully'
-        ]);
+        ], 200);
     }
 
+   
     public function destroy(Category $category)
     {
         $category->delete();
 
-        return response()->json([
-            'message' => 'Category deleted successfully'
-        ], 200);
+        return response()->json(['message' => 'Category deleted successfully']);
     }
-
 }

@@ -14,7 +14,7 @@ return new class extends Migration {
             $table->id();
             $table->string('phone_number');
             $table->string('address');
-            $table->string('city');
+            $table->enum('city', ['Male', 'Hulhumale Phase 1', 'Hulhumale Phase 2']);
             $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
             $table->decimal('total_amount', 10, 2);
             $table->timestamps();

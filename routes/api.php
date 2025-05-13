@@ -12,13 +12,10 @@ Route::get('/user', function (Request $request) {
 
 Route::get('categories', [CategoryController::class, 'index']);
 Route::post('categories', [CategoryController::class, 'store']);
-Route::get('categories/{id}', [CategoryController::class, 'show']);
-Route::put('categories/{id}', [CategoryController::class, 'update']);
-Route::delete('categories/{id}', [CategoryController::class, 'destroy']);
+Route::put('categories/{category}', [CategoryController::class, 'update']);
+Route::delete('categories/{category}', [CategoryController::class, 'destroy']);
 
-Route::get('items', [ItemController::class, 'index']);
 Route::post('items', [ItemController::class, 'store']);
-Route::get('items/{item}', [ItemController::class, 'show']);
 Route::put('items/{item}', [ItemController::class, 'update']);
 Route::delete('items/{item}', [ItemController::class, 'destroy']);
 

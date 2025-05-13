@@ -15,6 +15,10 @@ class ItemTableSeeder extends Seeder
     {
         DB::table('items')->insert([
             ['name' => 'Mandi', 'price' => 65, 'category_id' => 1],
+            ['name' => 'Kabsa Large', 'price' => 120, 'category_id' => 1],
+            ['name' => 'Orange Juice', 'price' => 40, 'category_id' => 1],
+
+
         ]);
     }
 }
