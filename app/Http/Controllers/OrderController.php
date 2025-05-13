@@ -76,8 +76,53 @@ class OrderController extends Controller
         ], 201);
     }
 
-    public function update()
+    public function update(OrderRequest $request, Order $order)
     {
-        dd('here');
+        $validatedData = $request->validated();
+    
+        $customer = Customer::updateOrCreate(
+            ['phone_number' => $validatedData['phone_number']],
+            [
+                'address' => $validatedData['address'],
+                'city' => $validatedData['city'],
+            ]
+        );
+
+        $totalAmount = 0;
+
+        foreach ($validatedData['order']['items'] as $item) {
+            $itemModel = Item::find($item['item_id']);
+            $totalAmount += $itemModel['price'] * $item['quantity'];
+        }
+
+        $order->customer_id = $customer->id;
+        
+        $order->status = $validatedData['order']['status'];
+    
+        $order->delivery_type = $validatedData['order']['delivery_type'] === 'pickup' ? 'picukup' : $validatedData['order']['delivery_type'];
+    
+        $order->payment_method = $validatedData['order']['payment_method'];
+    
+        if (isset($validatedData['order']['transfer_reference_number'])) {
+            $order->transfer_reference_number = $validatedData['order']['transfer_reference_number'];
+        }
+    
+        $order->total_amount = $totalAmount;
+        $order->save();
+
+        $order->items()->detach();
+    
+        foreach ($validatedData['order']['items'] as $item) {
+            $itemModel = Item::findOrFail($item['item_id']);
+            $order->items()->attach($itemModel->id, [
+                'quantity' => $item['quantity'],
+                'price' => $itemModel->price,
+            ]);
+        }
+    
+        return response()->json([
+            'message' => 'Order updated successfully',
+            'order' => $order,
+        ]);
     }
 }

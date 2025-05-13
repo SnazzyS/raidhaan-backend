@@ -10,14 +10,12 @@ return new class extends Migration {
      */
     public function up(): void
     {
-        Schema::create('orders', function (Blueprint $table) {
+        Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
-            $table->enum('delivery_type', ['pickup', 'delivery']);
+            $table->integer('order_number');
             $table->enum('payment_method', ['transfer', 'cash', 'card']);
             $table->string('transfer_reference_number')->nullable();
-            $table->decimal('total_amount', 10, 2);
+            $table->decimal('total', 10, 2);
             $table->timestamps();
         });
     }
@@ -27,6 +25,6 @@ return new class extends Migration {
      */
     public function down(): void
     {
-        Schema::dropIfExists('orders');
+        Schema::dropIfExists('sales');
     }
 };
