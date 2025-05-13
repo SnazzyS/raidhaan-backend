@@ -13,7 +13,7 @@ return new class extends Migration {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->foreignId('customer_id')->constrained()->onDelete('cascade');
-            $table->enum('status', ['pending', 'processing', 'completed', 'cancelled'])->default('pending');
+            $table->enum('status', ['pending', 'completed', 'cancelled'])->default('pending');
             $table->enum('delivery_type', ['picukup', 'delivery']);
             $table->enum('payment_method', ['transfer', 'cash', 'card']);
             $table->string('transfer_reference_number')->nullable();

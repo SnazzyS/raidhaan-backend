@@ -7,9 +7,27 @@ use App\Models\Order;
 use App\Models\Customer;
 use Illuminate\Http\Request;
 use App\Http\Requests\OrderRequest;
+use Spatie\QueryBuilder\QueryBuilder;
+use Spatie\QueryBuilder\AllowedFilter;
 
 class OrderController extends Controller
 {
+
+    public function index(Request $request)
+    {
+
+        $orders = QueryBuilder::for(Order::class)
+        ->allowedFilters([
+         AllowedFilter::exact('status'),
+        ])
+        ->with(['customer', 'items'])
+        ->whereDate('created_at', today())
+        ->get();
+
+        return response()->json($orders);
+
+    }
+
     public function store(OrderRequest $request)
     {
         $validatedData = $request->validated();
@@ -56,5 +74,10 @@ class OrderController extends Controller
             'message' => 'Order created successfully',
             'order' => $order,
         ], 201);
+    }
+
+    public function update()
+    {
+        dd('here');
     }
 }
