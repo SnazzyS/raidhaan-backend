@@ -23,13 +23,13 @@ class OrderRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'phone_number' => ['required', 'integer'],
+            'phone_number' => ['required', 'integer', 'digits:7'],
             'address' => ['required', 'string'],
             'city' => 'required', Rule::in(['male', 'hulhumale phase 1', 'hulhumale phase 2']),
             'order.status' => ['required', Rule::in(['pending', 'completed', 'cancelled'])],
             'order.delivery_type' => ['required', Rule::in(['delivery', 'pickup'])],
             'order.payment_method' => ['required', Rule::in(['transfer', 'cash', 'card'])],
-            'order.transfer_reference_number' => ['string'],
+            'order.transfer_reference_number' => ['string', 'nullable'],
             'order.items' => ['required', 'array'],
             'order.items.*.item_id' => ['required', 'integer', 'exists:items,id'],
             'order.items.*.quantity' => ['required', 'integer']

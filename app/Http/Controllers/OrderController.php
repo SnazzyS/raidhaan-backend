@@ -17,12 +17,20 @@ class OrderController extends Controller
     public function index(Request $request)
     {
 
+        // $orders = QueryBuilder::for(Order::class)
+        // ->allowedFilters([
+        //  AllowedFilter::exact('status'),
+        // ])
+        // ->with(['customer', 'items'])
+        // ->whereDate('created_at', today())
+        // ->get();
+
         $orders = QueryBuilder::for(Order::class)
         ->allowedFilters([
-         AllowedFilter::exact('status'),
+        AllowedFilter::exact('status'),
         ])
         ->with(['customer', 'items'])
-        ->whereDate('created_at', today())
+        ->where('status', 'pending')  // Filter for pending orders
         ->get();
 
         return response()->json($orders);
@@ -79,6 +87,12 @@ class OrderController extends Controller
         ], 201);
     }
 
+    public function show(Order $order)
+    {
+        $order->load(['customer', 'items']);
+        return response()->json($order);
+    }
+
     public function update(OrderRequest $request, Order $order)
     {
         $validatedData = $request->validated();
@@ -129,6 +143,30 @@ class OrderController extends Controller
     
         return response()->json([
             'message' => 'Order updated successfully',
+            'order' => $order,
+        ]);
+    }
+
+    public function generateReceipt(Order $order)
+    {
+        $order->load(['customer', 'items']);
+
+        $lines = [];
+        $lines[] = "Order #: " . $order->order_number;
+        $lines[] = "Customer: " . $order->customer->phone_number;
+        $lines[] = "------------------------------";
+
+        foreach ($order->items as $item) {
+            $lines[] = $item->name . " x" . $item->pivot->quantity . " - MVR " . ($item->pivot->price * $item->pivot->quantity);
+        }
+
+        $lines[] = "------------------------------";
+        $lines[] = "Total: MVR " . number_format($order->total_amount, 2);
+        $lines[] = "Thank you!";
+
+        
+        return response()->json([
+            'message' => 'Receipt generated successfully',
             'order' => $order,
         ]);
     }
