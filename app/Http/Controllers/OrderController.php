@@ -165,7 +165,7 @@ class OrderController extends Controller
         $lines[] = "Total: MVR " . number_format($order->total_amount, 2);
         $lines[] = "     Thank you for ordering!     ";
 
-
+        // response
         return response()->json([
          'receipt' => implode("\n", $lines),
     ]);
