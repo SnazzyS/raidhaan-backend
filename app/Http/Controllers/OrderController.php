@@ -1,173 +1,53 @@
-<?php
+<script setup>
+import { ref, onMounted } from "vue";
+import { useRouter } from "vue-router";
+import { getOrders, updateOrder } from "@/services/orderService";
+import usePrinter from "@/composables/usePrinter"; // make sure this path is correct
 
-namespace App\Http\Controllers;
+const { printText } = usePrinter();
+const router = useRouter();
+const orders = ref([]);
+const loading = ref(true);
 
-use App\Actions\Orders\OrderNumberGenerator;
-use App\Models\Item;
-use App\Models\Order;
-use App\Models\Customer;
-use Illuminate\Http\Request;
-use App\Http\Requests\OrderRequest;
-use Spatie\QueryBuilder\QueryBuilder;
-use Spatie\QueryBuilder\AllowedFilter;
+// Load orders
+onMounted(async () => {
+  try {
+    const res = await getOrders();
+    orders.value = res.data;
+  } catch (e) {
+    console.error("Failed to load orders", e);
+  } finally {
+    loading.value = false;
+  }
 
-class OrderController extends Controller
-{
+  window.addEventListener("print-receipt", (e) => {
+    printText(e.detail); // e.detail contains the raw receipt text
+  });
 
-    public function index(Request $request)
-    {
+  qz.printers.find().then(console.log);
+});
 
-        // $orders = QueryBuilder::for(Order::class)
-        // ->allowedFilters([
-        //  AllowedFilter::exact('status'),
-        // ])
-        // ->with(['customer', 'items'])
-        // ->whereDate('created_at', today())
-        // ->get();
-
-        $orders = QueryBuilder::for(Order::class)
-        ->allowedFilters([
-        AllowedFilter::exact('status'),
-        ])
-        ->with(['customer', 'items'])
-        ->where('status', 'pending')  // Filter for pending orders
-        ->get();
-
-        return response()->json($orders);
-
-    }
-
-    public function store(OrderRequest $request)
-    {
-        $validatedData = $request->validated();
-        
-        $customer = Customer::updateOrCreate(
-            ['phone_number' => $validatedData['phone_number']],
-            [
-                'address' => $validatedData['address'],
-                'city' => $validatedData['city'],
-            ]
-        );
-
-        $totalAmount = 0;
-
-        foreach ($validatedData['order']['items'] as $item) {
-            $itemModel = Item::find($item['item_id']);
-            $totalAmount += $itemModel['price'] * $item['quantity'];
-        }
-
-        $order = new Order();
-        $order->customer_id = $customer->id;
-        $order->status = $validatedData['order']['status'];
-        $order->delivery_type = $validatedData['order']['delivery_type'];
-        $order->payment_method = $validatedData['order']['payment_method'];
-
-        $order->order_number = (new OrderNumberGenerator())->execute();
-
-        if (isset($validatedData['order']['transfer_reference_number'])) {
-            $order->transfer_reference_number = $validatedData['order']['transfer_reference_number'];
-        }
-
-        
-        $order->total_amount = $totalAmount;
-        $order->save();
-
-
-        foreach ($validatedData['order']['items'] as $item) {
-            $itemModel = Item::findOrFail($item['item_id']);
-            $order->items()->attach($itemModel->id, [
-                'quantity' => $item['quantity'],
-                'price' => $itemModel->price,
-            ]);
-        }
-        
-        return response()->json([
-            'message' => 'Order created successfully',
-            'order' => $order,
-        ], 201);
-    }
-
-    public function show(Order $order)
-    {
-        $order->load(['customer', 'items']);
-        return response()->json($order);
-    }
-
-    public function update(OrderRequest $request, Order $order)
-    {
-        $validatedData = $request->validated();
-    
-        $customer = Customer::updateOrCreate(
-            ['phone_number' => $validatedData['phone_number']],
-            [
-                'address' => $validatedData['address'],
-                'city' => $validatedData['city'],
-            ]
-        );
-
-        $totalAmount = 0;
-
-        foreach ($validatedData['order']['items'] as $item) {
-            $itemModel = Item::find($item['item_id']);
-            $totalAmount += $itemModel['price'] * $item['quantity'];
-        }
-
-        $order->customer_id = $customer->id;
-        
-        $order->status = $validatedData['order']['status'];
-    
-        $order->delivery_type = $validatedData['order']['delivery_type'] === 'pickup' ? 'pickup' : $validatedData['order']['delivery_type'];
-    
-        $order->payment_method = $validatedData['order']['payment_method'];
-    
-        if (isset($validatedData['order']['transfer_reference_number'])) {
-            $order->transfer_reference_number = $validatedData['order']['transfer_reference_number'];
-        }
-    
-        $order->total_amount = $totalAmount;
-
-   
-
-
-        $order->save();
-
-        $order->items()->detach();
-    
-        foreach ($validatedData['order']['items'] as $item) {
-            $itemModel = Item::findOrFail($item['item_id']);
-            $order->items()->attach($itemModel->id, [
-                'quantity' => $item['quantity'],
-                'price' => $itemModel->price,
-            ]);
-        }
-    
-        return response()->json([
-            'message' => 'Order updated successfully',
-            'order' => $order,
-        ]);
-    }
-
-    public function generateReceipt(Order $order)
-    {
-        $order->load(['customer', 'items']);
-
-        $lines = [];
-        $lines[] = "Order #: " . $order->order_number;
-        $lines[] = "Customer: " . $order->customer->phone_number;
-        $lines[] = "------------------------------";
-
-        foreach ($order->items as $item) {
-            $lines[] = $item->name . " x" . $item->pivot->quantity . " - MVR " . ($item->pivot->price * $item->pivot->quantity);
-        }
-
-        $lines[] = "------------------------------";
-        $lines[] = "Total: MVR " . number_format($order->total_amount, 2);
-        $lines[] = "Thank you!";
-
-        
-        return response()->json([
-            'message' => 'Receipt generated successfully',
-            'order' => $order,
-        ]);
-    }
+// API call to get receipt text
+async function printOrder(orderId) {
+  try {
+    const { data } = await axios.get(`/api/orders/${orderId}/receipt`);
+    window.dispatchEvent(new CustomEvent("print-receipt", { detail: data.receipt }));
+  } catch (e) {
+    alert("Failed to print");
+  }
 }
+
+const handleEdit = (order) => {
+  router.push({ name: "order-edit", params: { id: order.id } });
+};
+
+const handleComplete = async (order) => {
+  if (order.status === "completed") return;
+  try {
+    await updateOrder(order.id, { ...order, status: "completed" });
+    order.status = "completed";
+  } catch (err) {
+    console.error("Complete failed", err);
+  }
+};
+</script>
