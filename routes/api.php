@@ -30,7 +30,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('orders/{order}', [OrderController::class, 'show']);
     Route::put('orders/{order}', [OrderController::class, 'update']);
     Route::delete('orders/{order}', [OrderController::class, 'destroy']);
-    Route::get('/orders/{order}/receipt', [OrderController::class, 'generateReceipt']);
+    // Route::get('/orders/{order}/receipt', [OrderController::class, 'generateReceipt']);
 
 
     Route::get('sales', [SaleController::class, 'index']);
@@ -40,3 +40,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('sales', [SaleController::class, 'index']);
     });
 });
+
+
+Route::get('orders/{order}/receipt', [OrderController::class, 'generateReceipt']);
