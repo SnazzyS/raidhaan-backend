@@ -2,63 +2,126 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <!-- treat 80 mm literally -->
-  <meta name="viewport" content="width=80mm, initial-scale=1">
   <style>
-    @page { size: 80mm auto; margin: 0; }
+    @page { 
+      size: 80mm auto; 
+      margin: 0; 
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
     body {
       width: 80mm;
-      padding: 5mm;
-      margin: 0;
-      box-sizing: border-box;
-      font-family: monospace;
-      font-size: 12px;
-      white-space: pre-wrap;
+      padding: 2mm;
+      font-family: 'Courier New', monospace;
+      font-size: 10px;
+      line-height: 1.2;
     }
-    @media print { body { margin: 0; } }
-
-    h2 { text-align: center; margin-bottom: 8px; }
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 2px 0; }
-    .item-name  { text-align: left;  }
-    .item-qty   { text-align: center; width: 20%; }
-    .item-price { text-align: right;  width: 30%; }
-    hr { border: none; border-top: 1px dashed #333; margin: 4px 0; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 5px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    
+    .info {
+      margin-bottom: 5px;
+    }
+    
+    .divider {
+      border-top: 1px dashed #000;
+      margin: 5px 0;
+    }
+    
+    table {
+      width: 100%;
+      table-layout: fixed;
+    }
+    
+    th {
+      text-align: left;
+      padding-bottom: 3px;
+      font-weight: bold;
+    }
+    
+    td {
+      padding: 1px 0;
+      vertical-align: top;
+    }
+    
+    .col-item { width: 50%; }
+    .col-qty { width: 15%; text-align: center; }
+    .col-price { width: 35%; text-align: right; }
+    
+    .total-row {
+      margin-top: 5px;
+      font-weight: bold;
+    }
+    
+    .total-label {
+      float: left;
+    }
+    
+    .total-amount {
+      float: right;
+    }
+    
+    .footer {
+      text-align: center;
+      margin-top: 10px;
+      font-size: 9px;
+    }
+    
+    @media print {
+      body {
+        margin: 0;
+        padding: 2mm;
+      }
+    }
   </style>
 </head>
 <body>
-  <h2>My Restaurant</h2>
-  <div>Order #: {{ $order->order_number }}</div>
-  <div>Date:     {{ $order->created_at->format('Y-m-d H:i') }}</div>
-  <hr>
-
+  <div class="header">My Restaurant</div>
+  
+  <div class="info">
+    <div>Order#: {{ $order->order_number }}</div>
+    <div>Date: {{ $order->created_at->format('Y-m-d H:i') }}</div>
+  </div>
+  
+  <div class="divider"></div>
+  
   <table>
     <thead>
       <tr>
-        <th class="item-name">Item</th>
-        <th class="item-qty">Qty</th>
-        <th class="item-price">Price</th>
+        <th class="col-item">Item</th>
+        <th class="col-qty">Qty</th>
+        <th class="col-price">Price</th>
       </tr>
     </thead>
     <tbody>
       @foreach($order->items as $item)
       <tr>
-        <td class="item-name"> {{ $item->name }} </td>
-        <td class="item-qty">  {{ $item->pivot->quantity }} </td>
-        <td class="item-price">
-          {{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}
-        </td>
+        <td class="col-item">{{ $item->name }}</td>
+        <td class="col-qty">{{ $item->pivot->quantity }}</td>
+        <td class="col-price">{{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}</td>
       </tr>
       @endforeach
     </tbody>
   </table>
-
-  <hr>
-  <div style="display:flex; justify-content:space-between; font-weight:bold;">
-    <span>Total</span>
-    <span>{{ number_format($order->total_amount, 2) }}</span>
+  
+  <div class="divider"></div>
+  
+  <div class="total-row">
+    <span class="total-label">Total</span>
+    <span class="total-amount">{{ number_format($order->total_amount, 2) }}</span>
+    <div style="clear: both;"></div>
   </div>
-
-  <div style="text-align:center; margin-top:8px;">Thank you!</div>
+  
+  <div class="footer">Thank you!</div>
 </body>
 </html>
