@@ -147,29 +147,7 @@ class OrderController extends Controller
         ]);
     }
 
-    // public function generateReceipt(Order $order)
-    // {
-    //     $order->load(['customer', 'items']);
 
-    //     $lines[] = str_pad("RAIDHAAN CAFE", 30, " ", STR_PAD_BOTH);
-    //     $lines[] = "Order #: " . $order->order_number;
-    //     $lines[] = "------------------------------";
-    //     $lines[] = "Item       Qty   Total";
-
-    //     foreach ($order->items as $item) {
-    //         $total = number_format($item->pivot->price * $item->pivot->quantity, 2);
-    //         $lines[] = sprintf("%-10s %3d %8s", $item->name, $item->pivot->quantity, $total);
-    //     }
-
-    //     $lines[] = "------------------------------";
-    //     $lines[] = "Total: MVR " . number_format($order->total_amount, 2);
-    //     $lines[] = "     Thank you for ordering!     ";
-
-    //     // response
-    //     return response()->json([
-    //      'receipt' => implode("\n", $lines),
-    // ]);
-    // }
 
     public function generateReceipt(Order $order)
     {
