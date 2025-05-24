@@ -4,124 +4,129 @@
   <meta charset="utf-8">
   <style>
     @page { 
-      size: 80mm auto; 
-      margin: 0; 
+      size: 80mm 200mm; /* Set a specific height instead of auto */
+      margin: 0;
     }
     
-    * {
+    @media print {
+      * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+      }
+    }
+    
+    html, body {
       margin: 0;
       padding: 0;
-      box-sizing: border-box;
+      width: 80mm;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      line-height: 1.4;
     }
     
-    body {
+    .receipt {
       width: 80mm;
-      padding: 2mm;
-      font-family: 'Courier New', monospace;
-      font-size: 10px;
-      line-height: 1.2;
+      padding: 5mm;
+      background: white;
     }
     
     .header {
       text-align: center;
-      margin-bottom: 5px;
-      font-size: 14px;
+      margin-bottom: 8px;
+      font-size: 16px;
       font-weight: bold;
     }
     
     .info {
-      margin-bottom: 5px;
+      margin-bottom: 8px;
+      font-size: 11px;
     }
     
     .divider {
       border-top: 1px dashed #000;
-      margin: 5px 0;
+      margin: 8px 0;
     }
     
     table {
       width: 100%;
-      table-layout: fixed;
+      border-collapse: collapse;
     }
     
     th {
       text-align: left;
-      padding-bottom: 3px;
+      padding: 4px 0;
       font-weight: bold;
+      font-size: 11px;
+      border-bottom: 1px solid #000;
     }
     
     td {
-      padding: 1px 0;
-      vertical-align: top;
+      padding: 4px 0;
+      font-size: 11px;
     }
     
-    .col-item { width: 50%; }
-    .col-qty { width: 15%; text-align: center; }
-    .col-price { width: 35%; text-align: right; }
+    .item { width: 50%; }
+    .qty { width: 15%; text-align: center; }
+    .price { width: 35%; text-align: right; }
+    
+    .total-section {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid #000;
+    }
     
     .total-row {
-      margin-top: 5px;
+      display: flex;
+      justify-content: space-between;
       font-weight: bold;
-    }
-    
-    .total-label {
-      float: left;
-    }
-    
-    .total-amount {
-      float: right;
+      font-size: 12px;
     }
     
     .footer {
       text-align: center;
-      margin-top: 10px;
-      font-size: 9px;
-    }
-    
-    @media print {
-      body {
-        margin: 0;
-        padding: 2mm;
-      }
+      margin-top: 12px;
+      font-size: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="header">My Restaurant</div>
-  
-  <div class="info">
-    <div>Order#: {{ $order->order_number }}</div>
-    <div>Date: {{ $order->created_at->format('Y-m-d H:i') }}</div>
+  <div class="receipt">
+    <div class="header">My Restaurant</div>
+    
+    <div class="info">
+      <div>Order #: {{ $order->order_number }}</div>
+      <div>Date: {{ $order->created_at->format('Y-m-d H:i') }}</div>
+    </div>
+    
+    <div class="divider"></div>
+    
+    <table>
+      <thead>
+        <tr>
+          <th class="item">Item</th>
+          <th class="qty">Qty</th>
+          <th class="price">Price</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach($order->items as $item)
+        <tr>
+          <td class="item">{{ $item->name }}</td>
+          <td class="qty">{{ $item->pivot->quantity }}</td>
+          <td class="price">{{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}</td>
+        </tr>
+        @endforeach
+      </tbody>
+    </table>
+    
+    <div class="total-section">
+      <div class="total-row">
+        <span>Total</span>
+        <span>{{ number_format($order->total_amount, 2) }}</span>
+      </div>
+    </div>
+    
+    <div class="footer">Thank you!</div>
   </div>
-  
-  <div class="divider"></div>
-  
-  <table>
-    <thead>
-      <tr>
-        <th class="col-item">Item</th>
-        <th class="col-qty">Qty</th>
-        <th class="col-price">Price</th>
-      </tr>
-    </thead>
-    <tbody>
-      @foreach($order->items as $item)
-      <tr>
-        <td class="col-item">{{ $item->name }}</td>
-        <td class="col-qty">{{ $item->pivot->quantity }}</td>
-        <td class="col-price">{{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}</td>
-      </tr>
-      @endforeach
-    </tbody>
-  </table>
-  
-  <div class="divider"></div>
-  
-  <div class="total-row">
-    <span class="total-label">Total</span>
-    <span class="total-amount">{{ number_format($order->total_amount, 2) }}</span>
-    <div style="clear: both;"></div>
-  </div>
-  
-  <div class="footer">Thank you!</div>
 </body>
 </html>
