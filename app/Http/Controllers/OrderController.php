@@ -15,55 +15,24 @@ use Illuminate\Support\Carbon;
 class OrderController extends Controller
 {
 
-    // public function index(Request $request)
-    // {
-
-    //     $orders = QueryBuilder::for(Order::class)
-    //     ->allowedFilters([
-    //     AllowedFilter::exact('status'),
-    //     ])
-    //     ->with(['customer', 'items'])
-    //     ->where('status', 'pending')
-    //     ->get();
-
-
-
-    //     return response()->json($orders);
-
-    // }
-
     public function index(Request $request)
     {
-        $query = QueryBuilder::for(Order::class)
-            ->allowedFilters([
-                AllowedFilter::exact('status'), // This allows ?status=cancelled
-                // AllowedFilter::scope('date'), // If you have a date scope defined in your Order model
-                                             // Alternatively, handle date filtering manually as below
-            ])
-            ->with(['customer', 'items']);
 
-        // Handle date filtering for 'today'
-        if ($request->query('date') === 'today') {
-            $query->whereDate('created_at', Carbon::today());
-        }
-        
-        // If a specific status is requested (like 'cancelled'),
-        // QueryBuilder's AllowedFilter::exact('status') should handle it.
-        // If 'date=today' is present AND no specific status is requested by the HistoryView's "All Today's" button,
-        // you might want a default set of statuses for that specific view.
-        // However, for the "Cancelled" view, it explicitly sends status=cancelled.
-
-        // Example: If the HistoryView's "All Today's" needs a specific set of statuses
-        // if ($request->query('date') === 'today' && !$request->has('status') && $request->query('source') === 'history_all') {
-        //     $query->whereIn('status', ['pending', 'completed', 'cancelled']);
-        // }
+        $orders = QueryBuilder::for(Order::class)
+        ->allowedFilters([
+        AllowedFilter::exact('status'),
+        ])
+        ->with(['customer', 'items'])
+        ->where('status', 'pending')
+        ->get();
 
 
-        $orders = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json($orders);
+
     }
 
+ 
     public function store(OrderRequest $request)
     {
         $validatedData = $request->validated();
@@ -183,5 +152,24 @@ class OrderController extends Controller
         return response()
             ->view('orders.receipt', ['order' => $order])
             ->header('Content-Type', 'text/html');
+    }
+
+    public function cancelledOrders(Request $request)
+    {
+        $query = Order::query()->where('status', 'cancelled'); //
+
+        if ($request->filled('from') && $request->filled('to')) {
+            $from = Carbon::parse($request->from)->startOfDay(); //
+            $to = Carbon::parse($request->to)->endOfDay(); //
+            $query->whereBetween('created_at', [$from, $to]); //
+        } else {
+            $query->whereDate('created_at', Carbon::today()); //
+        }
+
+        $cancelledOrders = $query->with(['customer', 'items']) //
+                                 ->orderBy('created_at', 'desc') //
+                                 ->get();
+
+        return response()->json($cancelledOrders);
     }
 }
