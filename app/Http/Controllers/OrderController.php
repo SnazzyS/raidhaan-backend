@@ -156,20 +156,18 @@ class OrderController extends Controller
 
     public function cancelledOrders(Request $request)
     {
-        $query = Order::query()->where('status', 'cancelled'); //
-
+        $query = Order::query()->where('status', 'cancelled');
+        
         if ($request->filled('from') && $request->filled('to')) {
-            $from = Carbon::parse($request->from)->startOfDay(); //
-            $to = Carbon::parse($request->to)->endOfDay(); //
-            $query->whereBetween('created_at', [$from, $to]); //
+            $from = Carbon::parse($request->from)->startOfDay();
+            $to = Carbon::parse($request->to)->endOfDay();
+            $query->whereBetween('created_at', [$from, $to]);
         } else {
-            $query->whereDate('created_at', Carbon::today()); //
+            $query->whereDate('created_at', today());
         }
-
-        $cancelledOrders = $query->with(['customer', 'items']) //
-                                 ->orderBy('created_at', 'desc') //
-                                 ->get();
-
+        
+        $cancelledOrders = $query->get();
+        
         return response()->json($cancelledOrders);
     }
 }
