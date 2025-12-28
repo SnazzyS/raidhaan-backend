@@ -2,9 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Category;
-use Illuminate\Http\Request;
 use App\Http\Requests\CategoryRequest;
+use App\Models\Category;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
@@ -50,24 +49,16 @@ class CategoryController extends Controller
         ]);
     }
 
-    public function webStore(Request $request)
+    public function webStore(CategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
-        Category::create($validated);
+        Category::create($request->validated());
 
         return redirect()->back()->with('success', 'Category created successfully');
     }
 
-    public function webUpdate(Category $category, Request $request)
+    public function webUpdate(Category $category, CategoryRequest $request)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-        ]);
-
-        $category->update($validated);
+        $category->update($request->validated());
 
         return redirect()->back()->with('success', 'Category updated successfully');
     }

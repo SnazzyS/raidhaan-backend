@@ -1,11 +1,16 @@
 import Badge from '@/Components/Badge';
 import Button from '@/Components/Button';
 import Card from '@/Components/Card';
+import Modal from '@/Components/Modal';
 import Table from '@/Components/Table';
 import AppLayout from '@/Layouts/AppLayout';
 import { Head, Link, router } from '@inertiajs/react';
+import { useState } from 'react';
 
 export default function OrderShow({ order }) {
+    const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+    const [pendingStatus, setPendingStatus] = useState(null);
+
     const handleStatusChange = (newStatus) => {
         router.patch(`/orders/${order.id}/status`, {
             status: newStatus,
@@ -13,6 +18,29 @@ export default function OrderShow({ order }) {
             preserveScroll: true,
         });
     };
+
+    const requestStatusChange = (newStatus) => {
+        setPendingStatus(newStatus);
+        setIsConfirmOpen(true);
+    };
+
+    const closeConfirm = () => {
+        setIsConfirmOpen(false);
+        setPendingStatus(null);
+    };
+
+    const confirmStatusChange = () => {
+        if (!pendingStatus) return;
+        handleStatusChange(pendingStatus);
+        closeConfirm();
+    };
+
+    const confirmTitle = pendingStatus === 'cancelled'
+        ? 'Cancel this order?'
+        : 'Mark order as completed?';
+    const confirmMessage = pendingStatus === 'cancelled'
+        ? 'This will set the order status to Cancelled.'
+        : 'This will set the order status to Completed.';
 
     return (
         <AppLayout title={`Order #${order.order_number}`}>
@@ -81,10 +109,20 @@ export default function OrderShow({ order }) {
                             </div>
                             {order.status === 'pending' && (
                                 <div className="flex gap-2">
-                                    <Button variant="success" size="sm" className="flex-1" onClick={() => handleStatusChange('completed')}>
+                                    <Button
+                                        variant="success"
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => requestStatusChange('completed')}
+                                    >
                                         Complete
                                     </Button>
-                                    <Button variant="danger" size="sm" className="flex-1" onClick={() => handleStatusChange('cancelled')}>
+                                    <Button
+                                        variant="danger"
+                                        size="sm"
+                                        className="flex-1"
+                                        onClick={() => requestStatusChange('cancelled')}
+                                    >
                                         Cancel
                                     </Button>
                                 </div>
@@ -141,6 +179,19 @@ export default function OrderShow({ order }) {
                     </Card>
                 </div>
             </div>
+
+            <Modal isOpen={isConfirmOpen} onClose={closeConfirm} title={confirmTitle}>
+                <p className="text-sm text-gray-600">{confirmMessage}</p>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={closeConfirm}>No, go back</Button>
+                    <Button
+                        variant={pendingStatus === 'cancelled' ? 'danger' : 'success'}
+                        onClick={confirmStatusChange}
+                    >
+                        Yes, confirm
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </AppLayout>
     );
 }
