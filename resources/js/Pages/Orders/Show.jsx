@@ -4,12 +4,15 @@ import Card from '@/Components/Card';
 import Modal from '@/Components/Modal';
 import Table from '@/Components/Table';
 import AppLayout from '@/Layouts/AppLayout';
+import { printReceiptHtml } from '@/lib/qz';
 import { Head, Link, router } from '@inertiajs/react';
+import axios from 'axios';
 import { useState } from 'react';
 
 export default function OrderShow({ order }) {
     const [isConfirmOpen, setIsConfirmOpen] = useState(false);
     const [pendingStatus, setPendingStatus] = useState(null);
+    const [isPrinting, setIsPrinting] = useState(false);
 
     const handleStatusChange = (newStatus) => {
         router.patch(`/orders/${order.id}/status`, {
@@ -35,6 +38,22 @@ export default function OrderShow({ order }) {
         closeConfirm();
     };
 
+    const handleQzPrint = async () => {
+        setIsPrinting(true);
+        try {
+            const response = await axios.get(`/api/orders/${order.id}/receipt`, {
+                params: { qz: 1 },
+                responseType: 'text',
+            });
+            await printReceiptHtml(response.data);
+        } catch (error) {
+            console.error('QZ Tray print failed', error);
+            window.alert('Unable to print via QZ Tray. Make sure QZ Tray is running.');
+        } finally {
+            setIsPrinting(false);
+        }
+    };
+
     const confirmTitle = pendingStatus === 'cancelled'
         ? 'Cancel this order?'
         : 'Mark order as completed?';
@@ -52,8 +71,11 @@ export default function OrderShow({ order }) {
                     <Button variant="ghost">← Back</Button>
                 </Link>
                 <div className="flex flex-wrap items-center gap-2">
+                    <Button variant="secondary" onClick={handleQzPrint} disabled={isPrinting}>
+                        {isPrinting ? 'Printing...' : 'Print (QZ)'}
+                    </Button>
                     <a href={`/api/orders/${order.id}/receipt`} target="_blank" rel="noopener noreferrer">
-                        <Button variant="secondary">Print</Button>
+                        <Button variant="ghost">Browser Print</Button>
                     </a>
                     <Link href={`/orders/${order.id}/edit`}>
                         <Button>Edit</Button>

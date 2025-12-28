@@ -130,6 +130,7 @@
 
     <div class="footer">Thank you!</div>
   </div>
+  @if (!$qzMode)
   <script>
     window.addEventListener('load', function () {
       window.focus();
@@ -139,5 +140,6 @@
       window.close();
     });
   </script>
+  @endif
 </body>
 </html>
