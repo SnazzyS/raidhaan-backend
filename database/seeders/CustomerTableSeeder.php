@@ -17,7 +17,7 @@ class CustomerTableSeeder extends Seeder
                 [
                 'phone_number' => 7999065,
                 'address' => 'Vinares Tower 9B',
-                'city' => 'Hulhumale Phase 1'
+                'city' => 'hulhumale phase 1'
                 ]
                 ]);
     }

@@ -15,28 +15,32 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-    
 
-        User::create([
-          'name' => 'Admin',
-          'email' => 'admin@raidhaan.com',
-          'password' => Hash::make('That7552'),
-          'role' => 'admin',
-        ]);
+
+        User::firstOrCreate(
+            ['email' => 'admin@raidhaan.com'],
+            [
+                'name' => 'Admin',
+                'password' => Hash::make('That7552'),
+                'role' => 'admin',
+            ]
+        );
 
         // Create staff user
-        User::create([
-            'name' => 'Staff',
-            'email' => 'staff@raidhaan.com',
-            'password' => Hash::make('6917'),
-            'role' => 'staff',
-        ]);
+        User::firstOrCreate(
+            ['email' => 'staff@raidhaan.com'],
+            [
+                'name' => 'Staff',
+                'password' => Hash::make('6917'),
+                'role' => 'staff',
+            ]
+        );
 
         $this->call([
             CategoryTableSeeder::class,
             ItemTableSeeder::class,
             CustomerTableSeeder::class,
-          
+
         ]);
     }
 }

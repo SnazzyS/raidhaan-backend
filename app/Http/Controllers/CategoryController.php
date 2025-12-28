@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Models\Category;
 use Illuminate\Http\Request;
 use App\Http\Requests\CategoryRequest;
-use PDO;
+use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
+    // API Methods
     public function index()
     {
         return response()->json(Category::with('items')->get());
@@ -17,28 +18,64 @@ class CategoryController extends Controller
     public function store(CategoryRequest $request)
     {
         Category::create($request->validated());
-        
+
         return response()->json([
                 'message' => 'Category created'
             ], 201);
-
     }
-
 
     public function update(Category $category, CategoryRequest $request)
     {
         $category->update($request->validated());
-        
+
         return response()->json([
             'message' => 'Category updated successfully'
         ], 200);
     }
 
-   
     public function destroy(Category $category)
     {
         $category->delete();
 
         return response()->json(['message' => 'Category deleted successfully']);
+    }
+
+    // Web/Inertia Methods
+    public function webIndex()
+    {
+        return Inertia::render('Categories/Index', [
+            'categories' => Category::withCount('items')
+                ->orderBy('name')
+                ->get(),
+        ]);
+    }
+
+    public function webStore(Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        Category::create($validated);
+
+        return redirect()->back()->with('success', 'Category created successfully');
+    }
+
+    public function webUpdate(Category $category, Request $request)
+    {
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+        ]);
+
+        $category->update($validated);
+
+        return redirect()->back()->with('success', 'Category updated successfully');
+    }
+
+    public function webDestroy(Category $category)
+    {
+        $category->delete();
+
+        return redirect()->back()->with('success', 'Category deleted successfully');
     }
 }
