@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
+  <title>Receipt</title>
   <style>
     @page { 
       size: 80mm 200mm; /* Set a specific height instead of auto */
@@ -128,5 +129,14 @@
     
     <div class="footer">Thank you!</div>
   </div>
+  <script>
+    window.addEventListener('load', function () {
+      window.focus();
+      window.print();
+    });
+    window.addEventListener('afterprint', function () {
+      window.close();
+    });
+  </script>
 </body>
 </html>
