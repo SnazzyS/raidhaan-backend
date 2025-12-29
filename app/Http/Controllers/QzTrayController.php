@@ -8,17 +8,9 @@ class QzTrayController extends Controller
 {
     public function certificate()
     {
-        $path = config('qz.certificate_path');
+        $certificate = $this->loadCertificate();
 
-        if (!$path || !is_file($path)) {
-            abort(404, 'QZ certificate not found.');
-        }
-
-        return response()->make(
-            file_get_contents($path),
-            200,
-            ['Content-Type' => 'text/plain']
-        );
+        return response()->make($certificate, 200, ['Content-Type' => 'text/plain']);
     }
 
     public function sign(Request $request)
@@ -27,13 +19,7 @@ class QzTrayController extends Controller
             'data' => 'required|string',
         ]);
 
-        $keyPath = config('qz.private_key_path');
-
-        if (!$keyPath || !is_file($keyPath)) {
-            abort(500, 'QZ private key not configured.');
-        }
-
-        $keyContents = file_get_contents($keyPath);
+        $keyContents = $this->loadPrivateKey();
         $passphrase = config('qz.private_key_passphrase');
 
         if ($passphrase !== null && $passphrase !== '') {
@@ -57,5 +43,53 @@ class QzTrayController extends Controller
         return response()->json([
             'signature' => base64_encode($signature),
         ]);
+    }
+
+    private function loadCertificate(): string
+    {
+        $base64 = config('qz.certificate_base64');
+        if ($base64) {
+            $decoded = base64_decode($base64, true);
+            if ($decoded === false) {
+                abort(500, 'QZ certificate base64 is invalid.');
+            }
+            return $decoded;
+        }
+
+        $raw = config('qz.certificate_raw');
+        if ($raw) {
+            return str_replace("\\n", "\n", $raw);
+        }
+
+        $path = config('qz.certificate_path');
+        if ($path && is_file($path)) {
+            return file_get_contents($path);
+        }
+
+        abort(404, 'QZ certificate not found.');
+    }
+
+    private function loadPrivateKey(): string
+    {
+        $base64 = config('qz.private_key_base64');
+        if ($base64) {
+            $decoded = base64_decode($base64, true);
+            if ($decoded === false) {
+                abort(500, 'QZ private key base64 is invalid.');
+            }
+            return $decoded;
+        }
+
+        $raw = config('qz.private_key_raw');
+        if ($raw) {
+            return str_replace("\\n", "\n", $raw);
+        }
+
+        $path = config('qz.private_key_path');
+        if ($path && is_file($path)) {
+            return file_get_contents($path);
+        }
+
+        abort(500, 'QZ private key not configured.');
     }
 }
