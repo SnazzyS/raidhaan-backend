@@ -5,7 +5,7 @@
   <title>Receipt</title>
   <style>
     @page {
-      size: 80mm 200mm; /* Set a specific height instead of auto */
+      size: 80mm auto; /* Continuous roll */
       margin: 0;
     }
 

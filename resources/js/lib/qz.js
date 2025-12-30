@@ -115,8 +115,10 @@ export const printReceiptHtml = async (html, options = {}) => {
     const configOptions = {
         units: 'mm',
         margins: { top: 0, right: 0, bottom: 0, left: 0 },
+        // Rasterize converts HTML to an image before printing (avoids raw HTML issues)
         rasterize: true,
-        scaleContent: false,
+        // Scale content to fit the paper width (fixes "zoomed in" issues)
+        scaleContent: true,
     };
 
     if (Number.isFinite(widthMm) && widthMm > 0) {
