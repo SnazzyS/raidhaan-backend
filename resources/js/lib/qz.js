@@ -26,18 +26,16 @@ const configureSecurity = () => {
     });
 
     qz.security.setSignaturePromise((toSign) => {
-        return new Promise((resolve, reject) => {
-            console.log('[QZ] Requesting signature...', { toSign });
-            axios.post('/qz/sign', { data: toSign })
-                .then((response) => {
-                    console.log('[QZ] Signature received');
-                    resolve(response.data.signature);
-                })
-                .catch((err) => {
-                    console.error('[QZ] Signature request failed:', err);
-                    reject(err);
-                });
-        });
+        console.log('[QZ] Requesting signature...', { toSign });
+        return axios.post('/qz/sign', { data: toSign })
+            .then((response) => {
+                console.log('[QZ] Signature received');
+                return response.data.signature;
+            })
+            .catch((err) => {
+                console.error('[QZ] Signature request failed:', err);
+                throw err;
+            });
     });
 
     securityConfigured = true;
