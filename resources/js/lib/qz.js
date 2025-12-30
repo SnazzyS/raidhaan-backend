@@ -26,25 +26,27 @@ const configureSecurity = () => {
     });
 
     qz.security.setSignaturePromise((toSign) => {
-        console.log('[QZ LOG v4] Requesting signature...', { toSign });
-        return axios.post('/qz/sign', { data: toSign })
-            .then((response) => {
-                console.log('[QZ LOG v4] Signature received');
-                return response.data.signature;
-            })
-            .catch((err) => {
-                console.error('[QZ LOG v4] Signature request failed:', err);
-                throw err;
-            });
+        return (resolve, reject) => {
+            console.log('[QZ LOG v5] Requesting signature...', { toSign });
+            axios.post('/qz/sign', { data: toSign })
+                .then((response) => {
+                    console.log('[QZ LOG v5] Signature received');
+                    resolve(response.data.signature);
+                })
+                .catch((err) => {
+                    console.error('[QZ LOG v5] Signature request failed:', err);
+                    reject(err);
+                });
+        };
     });
 
     securityConfigured = true;
-    console.log('[QZ LOG v4] Security configured');
+    console.log('[QZ LOG v5] Security configured');
 };
 
 const ensureConnection = async () => {
     configureSecurity();
-    console.log('[QZ LOG v4] Checking connection status...');
+    console.log('[QZ LOG v5] Checking connection status...');
 
     if (qz.websocket.isActive()) {
         console.log('[QZ] Websocket already active');
