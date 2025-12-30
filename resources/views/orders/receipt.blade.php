@@ -16,18 +16,22 @@
       }
     }
 
+    * {
+      box-sizing: border-box;
+    }
+
     html, body {
       margin: 0;
       padding: 0;
-      width: 80mm;
+      width: 100%;
       font-family: 'Courier New', monospace;
       font-size: 12px;
       line-height: 1.4;
     }
 
     .receipt {
-      width: 80mm;
-      padding: 5mm;
+      width: 100%;
+      padding: 2mm; /* Reduced padding to maximize printable area */
       background: white;
     }
 
