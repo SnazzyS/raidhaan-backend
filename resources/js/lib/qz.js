@@ -12,32 +12,72 @@ const configureSecurity = () => {
         return;
     }
 
-    qz.security.setCertificatePromise(() => (
-        axios.get('/qz/certificate', { responseType: 'text' }).then((response) => response.data)
-    ));
+    qz.security.setCertificatePromise((resolve, reject) => {
+        console.log('[QZ] Requesting certificate...');
+        axios.get('/qz/certificate', { responseType: 'text' })
+            .then((response) => {
+                console.log('[QZ] Certificate received');
+                resolve(response.data);
+            })
+            .catch((err) => {
+                console.error('[QZ] Certificate request failed:', err);
+                reject(err);
+            });
+    });
 
-    qz.security.setSignaturePromise((toSign) => (
-        axios.post('/qz/sign', { data: toSign }).then((response) => response.data.signature)
-    ));
+    qz.security.setSignaturePromise((toSign) => {
+        return new Promise((resolve, reject) => {
+            console.log('[QZ] Requesting signature...', { toSign });
+            axios.post('/qz/sign', { data: toSign })
+                .then((response) => {
+                    console.log('[QZ] Signature received');
+                    resolve(response.data.signature);
+                })
+                .catch((err) => {
+                    console.error('[QZ] Signature request failed:', err);
+                    reject(err);
+                });
+        });
+    });
 
     securityConfigured = true;
+    console.log('[QZ] Security configured');
 };
 
 const ensureConnection = async () => {
     configureSecurity();
 
     if (qz.websocket.isActive()) {
+        console.log('[QZ] Websocket already active');
         return;
     }
 
-    if (!connectPromise) {
-        connectPromise = qz.websocket.connect();
+    if (connectPromise) {
+        console.log('[QZ] Waiting for existing connection attempt...');
+        await connectPromise;
+        return;
     }
 
+    console.log('[QZ] connecting to websocket...');
+    connectPromise = qz.websocket.connect({
+        retries: 0, // Disable retries to fail fast for debugging
+        keepAlive: 60
+    });
+
+    const timeoutPromise = new Promise((_, reject) =>
+        setTimeout(() => reject(new Error('Connection timed out after 5s')), 5000)
+    );
+
     try {
-        await connectPromise;
+        await Promise.race([connectPromise, timeoutPromise]);
+        console.log('[QZ] Websocket connected successfully');
     } catch (error) {
+        console.error('[QZ] Websocket connection failed or timed out:', error);
         connectPromise = null;
+        if (qz.websocket.isActive()) {
+            console.log('[QZ] Disconnecting due to error...');
+            try { await qz.websocket.disconnect(); } catch (e) {}
+        }
         throw error;
     }
 };
