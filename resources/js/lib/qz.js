@@ -46,11 +46,30 @@ export const printReceiptHtml = async (html, options = {}) => {
     const printerName = options.printerName || defaultPrinterName;
     const widthMm = Number(options.widthMm || defaultPaperWidthMm);
 
-    await ensureConnection();
+    console.log('[QZ] Starting print job...', { printerName, widthMm });
 
-    const printer = printerName
-        ? await qz.printers.find(printerName)
-        : await qz.printers.find();
+    try {
+        await ensureConnection();
+        console.log('[QZ] Connection ensured');
+    } catch (err) {
+        console.error('[QZ] Connection failed:', err);
+        throw new Error(`QZ Tray connection failed: ${err.message || err}`);
+    }
+
+    let printer;
+    try {
+        if (printerName) {
+            console.log(`[QZ] Searching for printer: "${printerName}"`);
+            printer = await qz.printers.find(printerName);
+        } else {
+            console.log('[QZ] Searching for default printer');
+            printer = await qz.printers.find();
+        }
+        console.log(`[QZ] Found printer: "${printer}"`);
+    } catch (err) {
+        console.error('[QZ] Printer not found:', err);
+        throw new Error(`Printer not found: ${err.message || err}`);
+    }
 
     const configOptions = {
         units: 'mm',
@@ -63,8 +82,15 @@ export const printReceiptHtml = async (html, options = {}) => {
         configOptions.size = { width: widthMm };
     }
 
-    const config = qz.configs.create(printer, configOptions);
-    const data = [{ type: 'html', format: 'plain', data: html }];
+    try {
+        const config = qz.configs.create(printer, configOptions);
+        const data = [{ type: 'html', format: 'plain', data: html }];
 
-    return qz.print(config, data);
+        console.log('[QZ] Sending data to printer...');
+        await qz.print(config, data);
+        console.log('[QZ] Print submitted successfully');
+    } catch (err) {
+        console.error('[QZ] Print execution failed:', err);
+        throw new Error(`Print failed: ${err.message || err}`);
+    }
 };

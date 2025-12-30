@@ -48,7 +48,8 @@ export default function OrderShow({ order }) {
             await printReceiptHtml(response.data);
         } catch (error) {
             console.error('QZ Tray print failed', error);
-            window.alert('Unable to print via QZ Tray. Make sure QZ Tray is running.');
+            const msg = error.message || 'Unknown error';
+            window.alert(`Unable to print via QZ Tray.\nError: ${msg}\n\nMake sure QZ Tray is running and allowed.`);
         } finally {
             setIsPrinting(false);
         }

@@ -66,7 +66,7 @@ class QzTrayController extends Controller
             return file_get_contents($path);
         }
 
-        abort(404, 'QZ certificate not found.');
+        abort(404, "QZ certificate not found at path: {$path}. Please ensure 'storage/app/qz/qz-tray.pem' exists or configure QZ_CERT_PATH.");
     }
 
     private function loadPrivateKey(): string
@@ -90,6 +90,6 @@ class QzTrayController extends Controller
             return file_get_contents($path);
         }
 
-        abort(500, 'QZ private key not configured.');
+        abort(500, "QZ private key not found at path: {$path}. Please ensure 'storage/app/qz/qz-tray.key' exists or configure QZ_PRIVATE_KEY_PATH.");
     }
 }

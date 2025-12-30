@@ -9,3 +9,5 @@ return [
     'private_key_path' => env('QZ_PRIVATE_KEY_PATH', storage_path('app/qz/qz-tray.key')),
     'private_key_passphrase' => env('QZ_PRIVATE_KEY_PASSPHRASE'),
 ];
+
+
