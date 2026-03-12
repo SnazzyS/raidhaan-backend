@@ -6,7 +6,6 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\SaleController;
-use App\Http\Controllers\QzTrayController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -45,8 +44,4 @@ Route::middleware('auth')->group(function () {
 
     // Sales
     Route::get('sales', [SaleController::class, 'webIndex'])->name('sales.index');
-
-    // QZ Tray
-    Route::get('qz/certificate', [QzTrayController::class, 'certificate'])->name('qz.certificate');
-    Route::post('qz/sign', [QzTrayController::class, 'sign'])->name('qz.sign');
 });

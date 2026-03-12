@@ -37,13 +37,11 @@ This starts:
 npm run build
 ```
 
-## Thermal printing (QZ Tray)
+## Local receipt printing
 
-The app prints receipts through QZ Tray in web mode.
-
-1. Ensure QZ Tray is running.
-2. Configure certificate/private key via `.env` (`QZ_*` variables) or file paths.
-3. Open an order and click **Print (QZ)**.
+1. Open an order.
+2. Click **Print Receipt**.
+3. A local print window opens and triggers the browser print dialog.
 
 ## Notes
 

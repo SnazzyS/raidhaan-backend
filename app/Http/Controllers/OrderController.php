@@ -130,14 +130,13 @@ class OrderController extends Controller
         ]);
     }
 
-    public function generateReceipt(Request $request, Order $order)
+    public function generateReceipt(Order $order)
     {
         $order->load(['customer', 'items']);
 
         return response()
             ->view('orders.receipt', [
                 'order' => $order,
-                'qzMode' => $request->boolean('qz'),
             ])
             ->header('Content-Type', 'text/html');
     }

@@ -5,7 +5,7 @@
   <title>Receipt</title>
   <style>
     @page {
-      size: 80mm auto; /* Continuous roll */
+      size: 80mm auto;
       margin: 0;
     }
 
@@ -24,17 +24,17 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      background: #eee; /* Light gray background to see paper bounds during debug if needed */
+      background: #eee;
     }
 
     .receipt {
       box-sizing: border-box;
-      width: 72mm; /* 80mm minus 4mm margins on each side */
-      margin: 0 auto; /* Center on the paper */
+      width: 72mm;
+      margin: 0 auto;
       padding: 0;
       background: white;
       font-family: 'Courier New', monospace;
-      font-size: 13px; /* Slightly larger text */
+      font-size: 13px;
       line-height: 1.3;
     }
 
@@ -137,16 +137,16 @@
 
     <div class="footer">Thank you!</div>
   </div>
-  @if (!$qzMode)
+
   <script>
     window.addEventListener('load', function () {
       window.focus();
       window.print();
     });
+
     window.addEventListener('afterprint', function () {
       window.close();
     });
   </script>
-  @endif
 </body>
 </html>

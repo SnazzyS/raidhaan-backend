@@ -3,9 +3,7 @@ import Badge from '@/Components/Badge.vue';
 import Button from '@/Components/Button.vue';
 import Card from '@/Components/Card.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
-import { printReceiptHtml } from '@/lib/qz';
 import { Head, Link, router } from '@inertiajs/vue3';
-import axios from 'axios';
 import { ref } from 'vue';
 
 const props = defineProps({
@@ -30,21 +28,20 @@ const requestStatusChange = (newStatus) => {
     router.patch(`/orders/${props.order.id}/status`, { status: newStatus }, { preserveScroll: true });
 };
 
-const handleReceiptPrint = async () => {
+const handleReceiptPrint = () => {
     isPrinting.value = true;
 
     try {
-        const response = await axios.get(`/api/orders/${props.order.id}/receipt`, {
-            params: { qz: 1 },
-            responseType: 'text',
-        });
+        const receiptWindow = window.open(`/api/orders/${props.order.id}/receipt`, '_blank', 'noopener,noreferrer');
 
-        await printReceiptHtml(response.data, { widthMm: 80 });
+        if (!receiptWindow) {
+            throw new Error('Popup blocked by browser. Please allow popups for this site and try again.');
+        }
     } catch (error) {
         // eslint-disable-next-line no-console
         console.error('Receipt print failed', error);
         const msg = error?.message || 'Unknown error';
-        window.alert(`Unable to print via QZ Tray.\nError: ${msg}\n\nMake sure QZ Tray is running and trusted.`);
+        window.alert(`Unable to open print window.\nError: ${msg}`);
     } finally {
         isPrinting.value = false;
     }
@@ -61,11 +58,8 @@ const handleReceiptPrint = async () => {
             </Link>
             <div class="flex flex-wrap gap-2">
                 <Button variant="secondary" :disabled="isPrinting" @click="handleReceiptPrint">
-                    {{ isPrinting ? 'Printing...' : 'Print (QZ)' }}
+                    {{ isPrinting ? 'Opening...' : 'Print Receipt' }}
                 </Button>
-                <a :href="`/api/orders/${order.id}/receipt`" target="_blank" rel="noopener noreferrer">
-                    <Button variant="ghost">Browser Print</Button>
-                </a>
                 <Link :href="`/orders/${order.id}/edit`">
                     <Button>Edit</Button>
                 </Link>
