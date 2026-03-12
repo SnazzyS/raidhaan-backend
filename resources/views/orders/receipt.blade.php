@@ -24,15 +24,18 @@
       margin: 0;
       padding: 0;
       width: 100%;
-      font-family: 'Courier New', monospace;
-      font-size: 12px;
-      line-height: 1.4;
+      background: #eee; /* Light gray background to see paper bounds during debug if needed */
     }
 
     .receipt {
-      width: 100%;
-      padding: 2mm; /* Reduced padding to maximize printable area */
+      box-sizing: border-box;
+      width: 72mm; /* 80mm minus 4mm margins on each side */
+      margin: 0 auto; /* Center on the paper */
+      padding: 0;
       background: white;
+      font-family: 'Courier New', monospace;
+      font-size: 13px; /* Slightly larger text */
+      line-height: 1.3;
     }
 
     .header {
