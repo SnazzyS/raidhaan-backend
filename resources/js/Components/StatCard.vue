@@ -12,8 +12,8 @@ defineProps({
 </script>
 
 <template>
-    <div class="card-surface rounded-2xl p-4 page-reveal">
+    <div class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
         <p class="text-sm font-medium text-slate-500">{{ title }}</p>
-        <p class="mt-1 text-2xl font-semibold text-slate-900">{{ value }}</p>
+        <p class="mt-2 text-2xl font-semibold tracking-tight text-slate-900">{{ value }}</p>
     </div>
 </template>

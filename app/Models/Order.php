@@ -10,9 +10,32 @@ class Order extends Model
         'customer_id',
         'status',
         'delivery_type',
+        'table_name',
         'payment_method',
         'transfer_reference_number',
-        'order_number'
+        'order_number',
+        'bill_number',
+        'bill_printed_at',
+        'subtotal_amount',
+        'gst_percentage',
+        'gst_amount',
+        'gst_is_inclusive',
+        'service_charge_percentage',
+        'service_charge_amount',
+        'service_charge_is_inclusive',
+        'total_amount',
+    ];
+
+    protected $casts = [
+        'bill_printed_at' => 'datetime',
+        'gst_is_inclusive' => 'boolean',
+        'service_charge_is_inclusive' => 'boolean',
+        'subtotal_amount' => 'decimal:2',
+        'gst_percentage' => 'decimal:2',
+        'gst_amount' => 'decimal:2',
+        'service_charge_percentage' => 'decimal:2',
+        'service_charge_amount' => 'decimal:2',
+        'total_amount' => 'decimal:2',
     ];
 
     public function customer()
@@ -25,5 +48,10 @@ class Order extends Model
         return $this->belongsToMany(Item::class, 'item_order')
             ->withPivot('quantity', 'price')
             ->withTimestamps();
+    }
+
+    public function isTableBill(): bool
+    {
+        return $this->delivery_type === 'dine_in' && filled($this->table_name);
     }
 }

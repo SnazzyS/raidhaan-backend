@@ -3,17 +3,23 @@
 namespace App\Actions\Orders;
 
 use App\Models\Order;
+use Illuminate\Support\Str;
 
 class OrderNumberGenerator
 {
-
-    public function execute()
+    public function execute(): string
     {
-        $totalOrders = Order::count();
+        $dateSegment = now()->format('Ymd');
 
-        $orderCount = $totalOrders + 1;
+        $latestOrderNumber = Order::query()
+            ->where('order_number', 'like', "ORD-{$dateSegment}-%")
+            ->orderByDesc('order_number')
+            ->value('order_number');
 
-        return 'ORD-' . $orderCount;
+        $nextSequence = $latestOrderNumber
+            ? ((int) Str::afterLast($latestOrderNumber, '-')) + 1
+            : 1;
+
+        return sprintf('ORD-%s-%04d', $dateSegment, $nextSequence);
     }
-
 }

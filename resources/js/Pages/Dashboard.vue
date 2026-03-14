@@ -10,58 +10,56 @@ defineProps({
         type: Object,
         default: () => ({}),
     },
-    recentOrders: {
+    tables: {
         type: Array,
         default: () => [],
     },
 });
+
+const formatCurrency = (value) => `MVR ${Number(value || 0).toLocaleString()}`;
 </script>
 
 <template>
     <AppLayout title="Dashboard">
         <Head title="Dashboard" />
 
-        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            <StatCard title="Total Orders" :value="stats.totalOrders || 0" />
-            <StatCard title="Pending" :value="stats.pendingOrders || 0" />
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+            <StatCard title="Tables" :value="stats.tableCount || 0" />
+            <StatCard title="Occupied" :value="stats.occupiedCount || 0" />
+            <StatCard title="Available" :value="stats.availableCount || 0" />
+            <StatCard title="Bills Printed" :value="stats.printedCount || 0" />
             <StatCard title="Revenue" :value="`MVR ${(stats.totalRevenue || 0).toLocaleString()}`" />
-            <StatCard title="Customers" :value="stats.totalCustomers || 0" />
         </div>
 
-        <Card title="Recent Orders">
-            <template #actions>
-                <Link href="/orders" class="text-sm text-gray-500 hover:text-gray-700">
-                    View all →
-                </Link>
-            </template>
+        <Card title="Dining Room Tables" description="Each table opens into an active guest bill or starts a new one when empty.">
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <Link
+                    v-for="table in tables"
+                    :key="table.name"
+                    :href="table.href"
+                    class="group block rounded-2xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                >
+                    <div class="flex items-start justify-between gap-3">
+                        <div>
+                            <p class="text-lg font-semibold tracking-tight text-slate-900">{{ table.name }}</p>
+                            <p class="mt-1 text-sm text-slate-500">
+                                {{ table.status === 'available' ? 'Available for a new bill.' : table.bill_number ? `Bill ${table.bill_number}` : 'Bill not printed yet.' }}
+                            </p>
+                        </div>
+                        <Badge :status="table.status" />
+                    </div>
 
-            <div v-if="recentOrders.length" class="overflow-x-auto">
-                <table class="w-full text-sm text-slate-700">
-                    <thead class="border-y border-emerald-100 bg-emerald-50/60">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Order</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Customer</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Status</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Amount</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-emerald-100/70">
-                        <tr v-for="order in recentOrders" :key="order.id" class="transition-colors duration-150 hover:bg-emerald-50/45">
-                            <td class="px-4 py-3">
-                                <Link :href="`/orders/${order.id}`" class="font-medium text-gray-900 hover:underline">
-                                    #{{ order.order_number }}
-                                </Link>
-                            </td>
-                            <td class="px-4 py-3">{{ order.customer?.phone_number }}</td>
-                            <td class="px-4 py-3"><Badge :status="order.status" /></td>
-                            <td class="px-4 py-3 text-right font-medium text-gray-900">
-                                MVR {{ Number(order.total_amount || 0).toLocaleString() }}
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                    <div v-if="table.status !== 'available'" class="mt-8 space-y-2">
+                        <p class="text-sm text-slate-500">Ticket #{{ table.order_number }}</p>
+                        <p class="text-sm text-slate-500">{{ table.item_count }} items attached</p>
+                        <p class="text-xl font-semibold tracking-tight text-slate-900">{{ formatCurrency(table.total_amount) }}</p>
+                    </div>
+
+                    <div v-else class="mt-8 rounded-xl border border-dashed border-slate-300 bg-slate-50 px-4 py-6 text-center text-sm font-medium text-slate-700">
+                        Open Table
+                    </div>
+                </Link>
             </div>
-            <div v-else class="p-4 text-center text-gray-500">No recent orders</div>
         </Card>
     </AppLayout>
 </template>

@@ -5,6 +5,7 @@ use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\RestaurantSettingController;
 use App\Http\Controllers\SaleController;
 use Illuminate\Support\Facades\Route;
 
@@ -44,4 +45,8 @@ Route::middleware('auth')->group(function () {
 
     // Sales
     Route::get('sales', [SaleController::class, 'webIndex'])->name('sales.index');
+
+    // Settings
+    Route::get('settings', [RestaurantSettingController::class, 'index'])->name('settings.index');
+    Route::put('settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
 });

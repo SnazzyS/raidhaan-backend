@@ -13,18 +13,21 @@ const props = defineProps({
 });
 
 const variants = {
-    default: 'bg-gray-100 text-gray-700',
-    primary: 'bg-gray-100 text-gray-700',
-    success: 'bg-emerald-50 text-emerald-700',
-    warning: 'bg-amber-50 text-amber-700',
-    danger: 'bg-rose-50 text-rose-700',
-    info: 'bg-sky-50 text-sky-700',
+    default: 'border-slate-200 bg-slate-50 text-slate-700',
+    primary: 'border-slate-200 bg-slate-100 text-slate-700',
+    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+    warning: 'border-amber-200 bg-amber-50 text-amber-700',
+    danger: 'border-rose-200 bg-rose-50 text-rose-700',
+    info: 'border-sky-200 bg-sky-50 text-sky-700',
 };
 
 const statusMap = {
     pending: { variant: 'warning', label: 'Pending' },
+    printed: { variant: 'info', label: 'Printed' },
     completed: { variant: 'success', label: 'Completed' },
     cancelled: { variant: 'danger', label: 'Cancelled' },
+    voided: { variant: 'danger', label: 'Voided' },
+    available: { variant: 'success', label: 'Available' },
     processing: { variant: 'info', label: 'Processing' },
 };
 
@@ -42,7 +45,7 @@ const resolved = computed(() => {
 
 <template>
     <span
-        class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium"
+        class="inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium"
         :class="variants[resolved.variant] || variants.default"
     >
         <slot>{{ resolved.label || status || '' }}</slot>

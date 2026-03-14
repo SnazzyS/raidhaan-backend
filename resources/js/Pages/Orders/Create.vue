@@ -4,8 +4,9 @@ import Card from '@/Components/Card.vue';
 import Input from '@/Components/Input.vue';
 import Select from '@/Components/Select.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
+import { calculateBillTotals } from '@/utils/billing';
 import { Head, Link, useForm } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 
 const props = defineProps({
     items: {
@@ -16,6 +17,14 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    tables: {
+        type: Array,
+        default: () => [],
+    },
+    defaults: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const form = useForm({
@@ -24,9 +33,14 @@ const form = useForm({
     city: '',
     order: {
         status: 'pending',
-        delivery_type: 'delivery',
+        delivery_type: props.defaults.delivery_type || 'delivery',
+        table_name: props.defaults.table_name || '',
         payment_method: 'cash',
         transfer_reference_number: '',
+        gst_percentage: props.defaults.gst_percentage ?? 0,
+        gst_is_inclusive: props.defaults.gst_is_inclusive ?? false,
+        service_charge_percentage: props.defaults.service_charge_percentage ?? 0,
+        service_charge_is_inclusive: props.defaults.service_charge_is_inclusive ?? false,
         items: [],
     },
 });
@@ -34,13 +48,25 @@ const form = useForm({
 const selectedCategory = ref('');
 
 const categoryOptions = computed(() =>
-    props.categories.map((cat) => ({ value: String(cat.id), label: cat.name })),
+    props.categories.map((category) => ({ value: String(category.id), label: category.name })),
 );
 
 const cityOptions = [
     { value: 'male', label: 'Male' },
     { value: 'hulhumale phase 1', label: 'Hulhumale Phase 1' },
     { value: 'hulhumale phase 2', label: 'Hulhumale Phase 2' },
+];
+
+const serviceTypeOptions = [
+    { value: 'delivery', label: 'Delivery' },
+    { value: 'pickup', label: 'Pickup' },
+    { value: 'dine_in', label: 'Dine In / Table' },
+];
+
+const paymentOptions = [
+    { value: 'cash', label: 'Cash' },
+    { value: 'transfer', label: 'Transfer' },
+    { value: 'card', label: 'Card' },
 ];
 
 const filteredItems = computed(() => {
@@ -51,8 +77,43 @@ const filteredItems = computed(() => {
     return props.items.filter((item) => item.category_id === Number(selectedCategory.value));
 });
 
+const isTableBill = computed(() => form.order.delivery_type === 'dine_in');
+const isLockedTableContext = computed(() => Boolean(props.defaults.locked_service_type));
+const isTransfer = computed(() => form.order.payment_method === 'transfer');
+const pageTitle = computed(() => {
+    if (isTableBill.value) {
+        return form.order.table_name ? `Open ${form.order.table_name}` : 'Open Table Bill';
+    }
+
+    return 'Create Delivery';
+});
+const backHref = computed(() => (isTableBill.value ? '/' : '/orders'));
+
+const totals = computed(() => calculateBillTotals(
+    form.order.items,
+    form.order.gst_percentage,
+    form.order.gst_is_inclusive,
+    form.order.service_charge_percentage,
+    form.order.service_charge_is_inclusive,
+));
+
+const totalItems = computed(() => form.order.items.length);
+const totalQuantity = computed(() => form.order.items.reduce((sum, item) => sum + Number(item.quantity), 0));
+
+watch(() => form.order.payment_method, (paymentMethod) => {
+    if (paymentMethod !== 'transfer') {
+        form.order.transfer_reference_number = '';
+    }
+});
+
+watch(() => form.order.delivery_type, (deliveryType) => {
+    if (deliveryType !== 'dine_in') {
+        form.order.table_name = '';
+    }
+});
+
 const addItem = (item) => {
-    const existingIndex = form.order.items.findIndex((i) => i.item_id === item.id);
+    const existingIndex = form.order.items.findIndex((selectedItem) => selectedItem.item_id === item.id);
 
     if (existingIndex > -1) {
         form.order.items[existingIndex].quantity += 1;
@@ -80,11 +141,7 @@ const updateQuantity = (index, quantity) => {
     form.order.items[index].quantity = quantity;
 };
 
-const totalItems = computed(() => form.order.items.length);
-const totalQuantity = computed(() => form.order.items.reduce((sum, item) => sum + Number(item.quantity), 0));
-const totalAmount = computed(() =>
-    form.order.items.reduce((sum, item) => sum + (Number(item.price) * Number(item.quantity)), 0),
-);
+const chargeLabel = (label, percentage, isInclusive) => `${label} (${Number(percentage || 0).toFixed(2)}%${isInclusive ? ', included' : ''})`;
 
 const submit = () => {
     form.post('/orders');
@@ -92,19 +149,23 @@ const submit = () => {
 </script>
 
 <template>
-    <AppLayout title="Create Order">
-        <Head title="Create Order" />
+    <AppLayout :title="pageTitle">
+        <Head :title="pageTitle" />
 
-        <div class="mb-4">
-            <Link href="/orders">
-                <Button variant="ghost">← Back</Button>
+        <div class="mb-6">
+            <Link :href="backHref">
+                <Button variant="ghost">Back</Button>
             </Link>
         </div>
 
         <form @submit.prevent="submit">
-            <div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div class="space-y-4 lg:col-span-2">
-                    <Card title="Customer">
+            <div class="grid grid-cols-1 gap-6 lg:grid-cols-3">
+                <div class="space-y-6 lg:col-span-2">
+                    <Card
+                        v-if="!isTableBill"
+                        title="Customer"
+                        description="Enter delivery or pickup details for this ticket."
+                    >
                         <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
                             <Input v-model="form.phone_number" label="Phone" placeholder="7123456" :error="form.errors.phone_number" />
                             <Input v-model="form.address" label="Address" placeholder="House, street" :error="form.errors.address" />
@@ -112,98 +173,180 @@ const submit = () => {
                         </div>
                     </Card>
 
-                    <Card title="Items">
+                    <Card title="Items" description="Choose menu items and attach them to this bill.">
                         <template #actions>
                             <Select
                                 v-model="selectedCategory"
                                 :options="categoryOptions"
                                 placeholder="All"
-                                class="w-full sm:w-32"
+                                class="w-full sm:w-44"
                             />
                         </template>
 
-                        <div class="grid grid-cols-2 gap-2 md:grid-cols-4">
+                        <div v-if="filteredItems.length" class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
                             <button
                                 v-for="item in filteredItems"
                                 :key="item.id"
                                 type="button"
-                                class="rounded border border-gray-200 p-3 text-left hover:bg-gray-50"
+                                class="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-slate-300 hover:bg-slate-50"
                                 @click="addItem(item)"
                             >
-                                <p class="truncate text-sm font-medium text-gray-900">{{ item.name }}</p>
-                                <p class="text-xs text-gray-500">MVR {{ item.price }}</p>
+                                <p class="truncate text-sm font-medium text-slate-900">{{ item.name }}</p>
+                                <p class="mt-1 text-xs text-slate-500">{{ item.category?.name || 'Uncategorized' }}</p>
+                                <p class="mt-4 text-sm font-semibold text-slate-900">MVR {{ Number(item.price || 0).toLocaleString() }}</p>
                             </button>
+                        </div>
+                        <div
+                            v-else
+                            class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500"
+                        >
+                            No items are available for this filter.
                         </div>
                     </Card>
 
-                    <Card v-if="form.order.items.length" title="Selected">
-                        <div class="space-y-2">
+                    <Card title="Selected Items" description="Adjust quantities before opening the ticket.">
+                        <div v-if="form.order.items.length" class="space-y-3">
                             <div
                                 v-for="(item, index) in form.order.items"
                                 :key="`${item.item_id}-${index}`"
-                                class="flex flex-col gap-2 border-b border-gray-100 py-2 last:border-0 sm:flex-row sm:items-center sm:justify-between"
+                                class="flex flex-col gap-4 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-center sm:justify-between"
                             >
                                 <div>
-                                    <p class="text-sm font-medium text-gray-900">{{ item.name }}</p>
-                                    <p class="text-xs text-gray-500">MVR {{ item.price }}</p>
+                                    <p class="text-sm font-medium text-slate-900">{{ item.name }}</p>
+                                    <p class="mt-1 text-xs text-slate-500">Unit price: MVR {{ Number(item.price || 0).toLocaleString() }}</p>
                                 </div>
                                 <div class="flex flex-wrap items-center gap-3">
-                                    <div class="flex items-center gap-1">
-                                        <button type="button" class="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm" @click="updateQuantity(index, item.quantity - 1)">-</button>
-                                        <span class="w-8 text-center text-sm">{{ item.quantity }}</span>
-                                        <button type="button" class="flex h-7 w-7 items-center justify-center rounded border border-gray-300 text-sm" @click="updateQuantity(index, item.quantity + 1)">+</button>
+                                    <div class="flex items-center gap-2">
+                                        <button type="button" class="flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-medium text-slate-600 hover:bg-slate-100" @click="updateQuantity(index, item.quantity - 1)">-</button>
+                                        <span class="w-8 text-center text-sm font-medium text-slate-900">{{ item.quantity }}</span>
+                                        <button type="button" class="flex h-8 w-8 items-center justify-center rounded-md border border-slate-300 bg-white text-sm font-medium text-slate-600 hover:bg-slate-100" @click="updateQuantity(index, item.quantity + 1)">+</button>
                                     </div>
-                                    <span class="w-20 text-right text-sm font-medium text-gray-900">MVR {{ (item.price * item.quantity).toLocaleString() }}</span>
-                                    <button type="button" class="text-gray-400 hover:text-rose-600" @click="removeItem(index)">×</button>
+                                    <span class="min-w-24 text-right text-sm font-semibold text-slate-900">
+                                        MVR {{ (item.price * item.quantity).toLocaleString() }}
+                                    </span>
+                                    <button type="button" class="rounded-md px-2 py-1 text-sm font-medium text-rose-600 transition hover:bg-rose-50 hover:text-rose-700" @click="removeItem(index)">
+                                        Remove
+                                    </button>
                                 </div>
                             </div>
+                        </div>
+                        <div
+                            v-else
+                            class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500"
+                        >
+                            No items selected yet.
                         </div>
                     </Card>
                 </div>
 
-                <div class="space-y-4">
-                    <Card title="Options">
+                <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
+                    <Card :title="isTableBill ? 'Table Setup' : 'Delivery Setup'" description="Choose how this ticket will be served and paid.">
                         <div class="space-y-4">
-                            <Select
-                                v-model="form.order.delivery_type"
-                                label="Delivery"
-                                :options="[
-                                    { value: 'delivery', label: 'Delivery' },
-                                    { value: 'pickup', label: 'Pickup' }
-                                ]"
-                            />
+                            <template v-if="isLockedTableContext">
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Service Type</p>
+                                    <p class="mt-1 font-medium text-slate-900">Dine In / Table</p>
+                                </div>
+                                <div class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm">
+                                    <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Table</p>
+                                    <p class="mt-1 font-medium text-slate-900">{{ form.order.table_name }}</p>
+                                </div>
+                            </template>
+                            <template v-else>
+                                <Select
+                                    v-model="form.order.delivery_type"
+                                    label="Service Type"
+                                    :options="serviceTypeOptions"
+                                    :error="form.errors['order.delivery_type']"
+                                />
+                                <Select
+                                    v-if="isTableBill"
+                                    v-model="form.order.table_name"
+                                    label="Table"
+                                    :options="tables"
+                                    placeholder="Select table"
+                                    :error="form.errors['order.table_name']"
+                                />
+                            </template>
                             <Select
                                 v-model="form.order.payment_method"
                                 label="Payment"
-                                :options="[
-                                    { value: 'cash', label: 'Cash' },
-                                    { value: 'transfer', label: 'Transfer' }
-                                ]"
+                                :options="paymentOptions"
+                                :error="form.errors['order.payment_method']"
                             />
                             <Input
-                                v-if="form.order.payment_method === 'transfer'"
+                                v-if="isTransfer"
                                 v-model="form.order.transfer_reference_number"
-                                label="Reference"
-                                placeholder="Ref number"
+                                label="Transfer Reference"
+                                placeholder="Reference number"
+                                :error="form.errors['order.transfer_reference_number']"
                             />
                         </div>
                     </Card>
 
-                    <Card title="Summary">
-                        <div class="flex justify-between text-sm text-gray-500">
-                            <span>Items</span>
-                            <span>{{ totalItems }}</span>
+                    <Card title="Charges" description="Track GST and service charges, and whether item prices already include them.">
+                        <div class="space-y-4">
+                            <Input
+                                v-model="form.order.gst_percentage"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                label="GST %"
+                                :error="form.errors['order.gst_percentage']"
+                            />
+                            <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                <input v-model="form.order.gst_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300">
+                                <span>GST is already included in menu prices.</span>
+                            </label>
+                            <Input
+                                v-model="form.order.service_charge_percentage"
+                                type="number"
+                                min="0"
+                                step="0.01"
+                                label="Service Charge %"
+                                :error="form.errors['order.service_charge_percentage']"
+                            />
+                            <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                                <input v-model="form.order.service_charge_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300">
+                                <span>Service charge is already included in menu prices.</span>
+                            </label>
                         </div>
-                        <div class="mb-3 mt-2 flex justify-between text-sm text-gray-500">
-                            <span>Quantity</span>
-                            <span>{{ totalQuantity }}</span>
+                    </Card>
+
+                    <Card title="Summary" description="Review the bill totals before saving.">
+                        <div class="space-y-3 text-sm">
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Items</span>
+                                <span class="font-medium text-slate-900">{{ totalItems }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Quantity</span>
+                                <span class="font-medium text-slate-900">{{ totalQuantity }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Menu total</span>
+                                <span class="font-medium text-slate-900">MVR {{ totals.subtotalAmount.toLocaleString() }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">{{ chargeLabel('GST', form.order.gst_percentage, form.order.gst_is_inclusive) }}</span>
+                                <span class="font-medium text-slate-900">
+                                    {{ form.order.gst_is_inclusive ? `Included MVR ${totals.gstAmount.toLocaleString()}` : `MVR ${totals.gstAmount.toLocaleString()}` }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">{{ chargeLabel('Service', form.order.service_charge_percentage, form.order.service_charge_is_inclusive) }}</span>
+                                <span class="font-medium text-slate-900">
+                                    {{ form.order.service_charge_is_inclusive ? `Included MVR ${totals.serviceChargeAmount.toLocaleString()}` : `MVR ${totals.serviceChargeAmount.toLocaleString()}` }}
+                                </span>
+                            </div>
+                            <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-4">
+                                <span class="font-medium text-slate-900">Grand total</span>
+                                <span class="text-lg font-semibold text-slate-900">MVR {{ totals.totalAmount.toLocaleString() }}</span>
+                            </div>
                         </div>
-                        <div class="flex justify-between border-t border-gray-200 pt-3">
-                            <span class="font-medium text-gray-900">Total</span>
-                            <span class="text-lg font-semibold text-gray-900">MVR {{ totalAmount.toLocaleString() }}</span>
-                        </div>
-                        <Button type="submit" class="mt-4 w-full" :disabled="form.processing || !form.order.items.length">
-                            {{ form.processing ? 'Creating...' : 'Create Order' }}
+
+                        <Button type="submit" class="mt-5 w-full" :disabled="form.processing || !form.order.items.length">
+                            {{ form.processing ? 'Saving...' : isTableBill ? 'Open Table Bill' : 'Create Delivery' }}
                         </Button>
                     </Card>
                 </div>

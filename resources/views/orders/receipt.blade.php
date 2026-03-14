@@ -2,7 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Receipt</title>
+  <title>{{ $order->isTableBill() ? 'Bill' : 'Receipt' }}</title>
   <style>
     @page {
       size: 80mm auto;
@@ -27,15 +27,17 @@
       background: #eee;
     }
 
+    body {
+      font-family: 'Courier New', monospace;
+    }
+
     .receipt {
-      box-sizing: border-box;
       width: 72mm;
       margin: 0 auto;
       padding: 0;
-      background: white;
-      font-family: 'Courier New', monospace;
-      font-size: 13px;
-      line-height: 1.3;
+      background: #fff;
+      font-size: 12px;
+      line-height: 1.35;
     }
 
     .header {
@@ -72,13 +74,14 @@
     td {
       padding: 4px 0;
       font-size: 11px;
+      vertical-align: top;
     }
 
-    .item { width: 50%; }
-    .qty { width: 15%; text-align: center; }
-    .price { width: 35%; text-align: right; }
+    .item { width: 52%; }
+    .qty { width: 14%; text-align: center; }
+    .price { width: 34%; text-align: right; }
 
-    .total-section {
+    .totals {
       margin-top: 8px;
       padding-top: 8px;
       border-top: 1px solid #000;
@@ -87,8 +90,25 @@
     .total-row {
       display: flex;
       justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .total-row .label {
+      color: #111;
+    }
+
+    .total-row .value {
+      text-align: right;
+      white-space: nowrap;
+    }
+
+    .grand-total {
+      margin-top: 6px;
+      padding-top: 6px;
+      border-top: 1px dashed #000;
       font-weight: bold;
-      font-size: 12px;
+      font-size: 13px;
     }
 
     .footer {
@@ -103,8 +123,17 @@
     <div class="header">{{ config('app.name') }}</div>
 
     <div class="info">
-      <div>Order #: {{ $order->order_number }}</div>
-      <div>Date: {{ $order->created_at->format('Y-m-d H:i') }}</div>
+      <div>Bill #: {{ $order->bill_number ?? 'Pending' }}</div>
+      <div>Ticket #: {{ $order->order_number }}</div>
+      @if($order->table_name)
+        <div>Table: {{ $order->table_name }}</div>
+      @endif
+      <div>Service: {{ $order->delivery_type === 'dine_in' ? 'Dine in' : ucfirst($order->delivery_type) }}</div>
+      <div>Payment: {{ ucfirst($order->payment_method) }}</div>
+      @if($order->transfer_reference_number)
+        <div>Transfer Ref: {{ $order->transfer_reference_number }}</div>
+      @endif
+      <div>Printed: {{ optional($order->bill_printed_at ?? $order->created_at)->format('Y-m-d H:i') }}</div>
     </div>
 
     <div class="divider"></div>
@@ -114,24 +143,44 @@
         <tr>
           <th class="item">Item</th>
           <th class="qty">Qty</th>
-          <th class="price">Price</th>
+          <th class="price">Total</th>
         </tr>
       </thead>
       <tbody>
         @foreach($order->items as $item)
-        <tr>
-          <td class="item">{{ $item->name }}</td>
-          <td class="qty">{{ $item->pivot->quantity }}</td>
-          <td class="price">MVR {{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}</td>
-        </tr>
+          <tr>
+            <td class="item">{{ $item->name }}</td>
+            <td class="qty">{{ $item->pivot->quantity }}</td>
+            <td class="price">MVR {{ number_format($item->pivot->price * $item->pivot->quantity, 2) }}</td>
+          </tr>
         @endforeach
       </tbody>
     </table>
 
-    <div class="total-section">
+    <div class="totals">
       <div class="total-row">
-        <span>Total</span>
-        <span>MVR {{ number_format($order->total_amount, 2) }}</span>
+        <span class="label">Menu total</span>
+        <span class="value">MVR {{ number_format($order->subtotal_amount, 2) }}</span>
+      </div>
+      <div class="total-row">
+        <span class="label">
+          GST ({{ number_format($order->gst_percentage, 2) }}%{{ $order->gst_is_inclusive ? ', included' : '' }})
+        </span>
+        <span class="value">
+          {{ $order->gst_is_inclusive ? 'Included ' : '' }}MVR {{ number_format($order->gst_amount, 2) }}
+        </span>
+      </div>
+      <div class="total-row">
+        <span class="label">
+          Service ({{ number_format($order->service_charge_percentage, 2) }}%{{ $order->service_charge_is_inclusive ? ', included' : '' }})
+        </span>
+        <span class="value">
+          {{ $order->service_charge_is_inclusive ? 'Included ' : '' }}MVR {{ number_format($order->service_charge_amount, 2) }}
+        </span>
+      </div>
+      <div class="total-row grand-total">
+        <span class="label">Grand total</span>
+        <span class="value">MVR {{ number_format($order->total_amount, 2) }}</span>
       </div>
     </div>
 

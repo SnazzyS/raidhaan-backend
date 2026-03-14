@@ -4,7 +4,6 @@ namespace App\Observers;
 
 use App\Models\Sale;
 use App\Models\Order;
-use Illuminate\Support\Facades\Log;
 
 class OrderObserver
 {
@@ -21,13 +20,21 @@ class OrderObserver
      */
     public function updated(Order $order): void
     {
-
-        if ($order->wasChanged('status') && $order->status === 'completed') {
-            Sale::create([
+        if ($order->status === 'completed' && (
+            $order->wasChanged('status')
+            || $order->wasChanged('payment_method')
+            || $order->wasChanged('total_amount')
+        )) {
+            Sale::updateOrCreate([
                 'order_number' => $order->order_number,
+            ], [
                 'payment_method' => $order->payment_method,
                 'total' => $order->total_amount,
             ]);
+        }
+
+        if ($order->wasChanged('status') && $order->status !== 'completed') {
+            Sale::where('order_number', $order->order_number)->delete();
         }
     }
 

@@ -60,35 +60,40 @@ const handleDelete = (category) => {
     <AppLayout title="Categories">
         <Head title="Categories" />
 
-        <Card title="Categories">
+        <Card title="Categories" description="Create and maintain the groups used to organize sale items.">
             <template #actions>
-                <Button @click="openCreateModal">Add</Button>
+                <Button @click="openCreateModal">Add Category</Button>
             </template>
 
-            <div v-if="props.categories.length" class="overflow-x-auto">
-                <table class="w-full text-sm text-slate-700">
-                    <thead class="border-y border-emerald-100 bg-emerald-50/60">
+            <div v-if="props.categories.length" class="-mx-5 -mb-5 overflow-x-auto">
+                <table class="min-w-full divide-y divide-slate-200 text-sm text-slate-700">
+                    <thead class="bg-slate-50">
                         <tr>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Name</th>
-                            <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">Items</th>
-                            <th class="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">Actions</th>
+                            <th class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Name</th>
+                            <th class="px-5 py-3 text-left text-xs font-medium uppercase tracking-wide text-slate-500">Items</th>
+                            <th class="px-5 py-3 text-right text-xs font-medium uppercase tracking-wide text-slate-500">Actions</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-emerald-100/70">
-                        <tr v-for="category in props.categories" :key="category.id" class="transition-colors duration-150 hover:bg-emerald-50/45">
-                            <td class="px-4 py-3 font-medium text-gray-900">{{ category.name }}</td>
-                            <td class="px-4 py-3">{{ category.items_count || 0 }}</td>
-                            <td class="px-4 py-3">
+                    <tbody class="divide-y divide-slate-200 bg-white">
+                        <tr v-for="category in props.categories" :key="category.id" class="hover:bg-slate-50">
+                            <td class="px-5 py-4 font-medium text-slate-900">{{ category.name }}</td>
+                            <td class="px-5 py-4">{{ category.items_count || 0 }}</td>
+                            <td class="px-5 py-4">
                                 <div class="flex justify-end gap-2">
                                     <Button variant="ghost" size="sm" @click="openEditModal(category)">Edit</Button>
-                                    <Button variant="ghost" size="sm" class="text-rose-600" @click="handleDelete(category)">Delete</Button>
+                                    <Button variant="ghost" size="sm" class="text-rose-600 hover:bg-rose-50 hover:text-rose-700" @click="handleDelete(category)">Delete</Button>
                                 </div>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div v-else class="p-4 text-center text-gray-500">No categories</div>
+            <div
+                v-else
+                class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-12 text-center text-sm text-slate-500"
+            >
+                No categories created yet.
+            </div>
         </Card>
 
         <Modal :show="isModalOpen" :title="editingCategory ? 'Edit Category' : 'Add Category'" @close="closeModal">
@@ -101,7 +106,7 @@ const handleDelete = (category) => {
                     autofocus
                 />
 
-                <div class="mt-4 flex justify-end gap-2 border-t border-gray-200 pt-4">
+                <div class="mt-5 flex justify-end gap-2 border-t border-slate-200 pt-4">
                     <Button type="button" variant="secondary" @click="closeModal">Cancel</Button>
                     <Button type="submit" :disabled="form.processing">
                         {{ form.processing ? 'Saving...' : 'Save' }}

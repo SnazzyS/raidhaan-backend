@@ -18,7 +18,12 @@ const submit = () => {
     <GuestLayout>
         <Head title="Login" />
 
-        <h2 class="mb-4 text-lg font-medium text-gray-900">Sign in</h2>
+        <div class="mb-6">
+            <h2 class="text-xl font-semibold tracking-tight text-slate-900">Sign in</h2>
+            <p class="mt-2 text-sm text-slate-500">
+                Use your account to manage orders, catalogue updates, and daily sales.
+            </p>
+        </div>
 
         <form class="space-y-4" @submit.prevent="submit">
             <Input
