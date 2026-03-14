@@ -25,6 +25,10 @@ const props = defineProps({
         type: Array,
         default: () => [],
     },
+    settings: {
+        type: Object,
+        default: () => ({}),
+    },
 });
 
 const form = useForm({
@@ -43,10 +47,6 @@ const form = useForm({
         table_name: props.order.table_name || '',
         payment_method: props.order.payment_method || 'cash',
         transfer_reference_number: props.order.transfer_reference_number || '',
-        gst_percentage: Number(props.order.gst_percentage || 0),
-        gst_is_inclusive: Boolean(props.order.gst_is_inclusive),
-        service_charge_percentage: Number(props.order.service_charge_percentage || 0),
-        service_charge_is_inclusive: Boolean(props.order.service_charge_is_inclusive),
         items: props.order.items?.map((item) => ({
             item_id: item.id,
             quantity: Number(item.pivot.quantity),
@@ -57,6 +57,7 @@ const form = useForm({
 });
 
 const selectedCategory = ref('');
+const searchTerm = ref('');
 
 const categoryOptions = computed(() =>
     props.categories.map((category) => ({ value: String(category.id), label: category.name })),
@@ -81,11 +82,16 @@ const paymentOptions = [
 ];
 
 const filteredItems = computed(() => {
-    if (!selectedCategory.value) {
-        return props.items;
-    }
+    const query = searchTerm.value.trim().toLowerCase();
 
-    return props.items.filter((item) => item.category_id === Number(selectedCategory.value));
+    return props.items.filter((item) => {
+        const matchesCategory = !selectedCategory.value || item.category_id === Number(selectedCategory.value);
+        const matchesSearch = query === ''
+            || item.name.toLowerCase().includes(query)
+            || (item.category?.name || '').toLowerCase().includes(query);
+
+        return matchesCategory && matchesSearch;
+    });
 });
 
 const isTableBill = computed(() => form.order.delivery_type === 'dine_in');
@@ -101,10 +107,10 @@ const pageTitle = computed(() => {
 
 const totals = computed(() => calculateBillTotals(
     form.order.items,
-    form.order.gst_percentage,
-    form.order.gst_is_inclusive,
-    form.order.service_charge_percentage,
-    form.order.service_charge_is_inclusive,
+    props.settings.gst_percentage,
+    props.settings.gst_is_inclusive,
+    props.settings.service_charge_percentage,
+    props.settings.service_charge_is_inclusive,
 ));
 
 const totalItems = computed(() => form.order.items.length);
@@ -185,12 +191,19 @@ const submit = () => {
 
                     <Card title="Items" description="Add more menu items or adjust the current selection.">
                         <template #actions>
-                            <Select
-                                v-model="selectedCategory"
-                                :options="categoryOptions"
-                                placeholder="All"
-                                class="w-full sm:w-44"
-                            />
+                            <div class="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+                                <Input
+                                    v-model="searchTerm"
+                                    placeholder="Search items"
+                                    class="w-full sm:w-52"
+                                />
+                                <Select
+                                    v-model="selectedCategory"
+                                    :options="categoryOptions"
+                                    placeholder="All"
+                                    class="w-full sm:w-44"
+                                />
+                            </div>
                         </template>
 
                         <div v-if="filteredItems.length" class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
@@ -210,7 +223,7 @@ const submit = () => {
                             v-else
                             class="rounded-lg border border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center text-sm text-slate-500"
                         >
-                            No items are available for this filter.
+                            No items match the current search or category filter.
                         </div>
                     </Card>
 
@@ -294,36 +307,12 @@ const submit = () => {
                         </div>
                     </Card>
 
-                    <Card title="Charges" description="Adjust tax and service charge visibility on the bill.">
-                        <div class="space-y-4">
-                            <Input
-                                v-model="form.order.gst_percentage"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                label="GST %"
-                                :error="form.errors['order.gst_percentage']"
-                            />
-                            <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                                <input v-model="form.order.gst_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300">
-                                <span>GST is already included in menu prices.</span>
-                            </label>
-                            <Input
-                                v-model="form.order.service_charge_percentage"
-                                type="number"
-                                min="0"
-                                step="0.01"
-                                label="Service Charge %"
-                                :error="form.errors['order.service_charge_percentage']"
-                            />
-                            <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
-                                <input v-model="form.order.service_charge_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300">
-                                <span>Service charge is already included in menu prices.</span>
-                            </label>
-                        </div>
-                    </Card>
-
-                    <Card title="Summary" description="Review the bill totals before saving.">
+                    <Card title="Summary" description="Review the bill totals before saving. GST and service charge come from Settings.">
+                        <template #actions>
+                            <Link href="/settings" class="text-sm font-medium text-slate-600 hover:text-slate-900">
+                                Open settings
+                            </Link>
+                        </template>
                         <div class="space-y-3 text-sm">
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-500">Items</span>
@@ -338,15 +327,15 @@ const submit = () => {
                                 <span class="font-medium text-slate-900">MVR {{ totals.subtotalAmount.toLocaleString() }}</span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-slate-500">{{ chargeLabel('GST', form.order.gst_percentage, form.order.gst_is_inclusive) }}</span>
+                                <span class="text-slate-500">{{ chargeLabel('GST', props.settings.gst_percentage, props.settings.gst_is_inclusive) }}</span>
                                 <span class="font-medium text-slate-900">
-                                    {{ form.order.gst_is_inclusive ? `Included MVR ${totals.gstAmount.toLocaleString()}` : `MVR ${totals.gstAmount.toLocaleString()}` }}
+                                    {{ props.settings.gst_is_inclusive ? `Included MVR ${totals.gstAmount.toLocaleString()}` : `MVR ${totals.gstAmount.toLocaleString()}` }}
                                 </span>
                             </div>
                             <div class="flex items-center justify-between">
-                                <span class="text-slate-500">{{ chargeLabel('Service', form.order.service_charge_percentage, form.order.service_charge_is_inclusive) }}</span>
+                                <span class="text-slate-500">{{ chargeLabel('Service', props.settings.service_charge_percentage, props.settings.service_charge_is_inclusive) }}</span>
                                 <span class="font-medium text-slate-900">
-                                    {{ form.order.service_charge_is_inclusive ? `Included MVR ${totals.serviceChargeAmount.toLocaleString()}` : `MVR ${totals.serviceChargeAmount.toLocaleString()}` }}
+                                    {{ props.settings.service_charge_is_inclusive ? `Included MVR ${totals.serviceChargeAmount.toLocaleString()}` : `MVR ${totals.serviceChargeAmount.toLocaleString()}` }}
                                 </span>
                             </div>
                             <div class="flex items-center justify-between rounded-lg bg-slate-50 px-4 py-4">
