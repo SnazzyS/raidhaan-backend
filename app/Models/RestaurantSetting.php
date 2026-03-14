@@ -12,6 +12,7 @@ class RestaurantSetting extends Model
         'gst_is_inclusive',
         'service_charge_percentage',
         'service_charge_is_inclusive',
+        'table_names',
     ];
 
     protected $casts = [
@@ -19,7 +20,13 @@ class RestaurantSetting extends Model
         'gst_is_inclusive' => 'boolean',
         'service_charge_percentage' => 'decimal:2',
         'service_charge_is_inclusive' => 'boolean',
+        'table_names' => 'array',
     ];
+
+    public static function defaultTableNames(): array
+    {
+        return config('restaurant.tables', []);
+    }
 
     public static function current(): self
     {
@@ -29,6 +36,7 @@ class RestaurantSetting extends Model
                 'gst_is_inclusive' => config('restaurant.charges.gst_is_inclusive', false),
                 'service_charge_percentage' => config('restaurant.charges.service_charge_percentage', 0),
                 'service_charge_is_inclusive' => config('restaurant.charges.service_charge_is_inclusive', false),
+                'table_names' => static::defaultTableNames(),
             ]);
         }
 
@@ -37,6 +45,17 @@ class RestaurantSetting extends Model
             'gst_is_inclusive' => config('restaurant.charges.gst_is_inclusive', false),
             'service_charge_percentage' => config('restaurant.charges.service_charge_percentage', 0),
             'service_charge_is_inclusive' => config('restaurant.charges.service_charge_is_inclusive', false),
+            'table_names' => static::defaultTableNames(),
         ]);
+    }
+
+    public function resolvedTableNames(): array
+    {
+        $tableNames = array_values(array_filter(array_map(
+            static fn ($tableName) => trim((string) $tableName),
+            $this->table_names ?? []
+        )));
+
+        return $tableNames ?: static::defaultTableNames();
     }
 }

@@ -4,6 +4,7 @@ import Card from '@/Components/Card.vue';
 import Input from '@/Components/Input.vue';
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Head, useForm } from '@inertiajs/vue3';
+import { computed } from 'vue';
 
 const props = defineProps({
     settings: {
@@ -17,10 +18,25 @@ const form = useForm({
     gst_is_inclusive: Boolean(props.settings.gst_is_inclusive),
     service_charge_percentage: Number(props.settings.service_charge_percentage || 0),
     service_charge_is_inclusive: Boolean(props.settings.service_charge_is_inclusive),
+    table_names: props.settings.table_names?.length ? [...props.settings.table_names] : [],
 });
 
 const submit = () => {
     form.put('/settings');
+};
+
+const normalizedTableNames = computed(() => form.table_names.map((tableName) => tableName || ''));
+
+const addTable = () => {
+    form.table_names.push(`Table ${form.table_names.length + 1}`);
+};
+
+const removeTable = (index) => {
+    if (form.table_names.length === 1) {
+        return;
+    }
+
+    form.table_names.splice(index, 1);
 };
 </script>
 
@@ -63,6 +79,37 @@ const submit = () => {
                         </label>
                     </div>
                 </Card>
+
+                <Card title="Tables" description="Add, remove, and rename the tables shown on the dashboard.">
+                    <div class="space-y-3">
+                        <div
+                            v-for="(tableName, index) in normalizedTableNames"
+                            :key="`table-${index}`"
+                            class="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50 p-4 sm:flex-row sm:items-end"
+                        >
+                            <Input
+                                v-model="form.table_names[index]"
+                                :label="`Table ${index + 1}`"
+                                placeholder="Table name"
+                                :error="form.errors[`table_names.${index}`]"
+                                class="flex-1"
+                            />
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                class="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
+                                :disabled="form.table_names.length === 1"
+                                @click="removeTable(index)"
+                            >
+                                Remove
+                            </Button>
+                        </div>
+                    </div>
+
+                    <Button type="button" variant="secondary" class="mt-4" @click="addTable">
+                        Add Table
+                    </Button>
+                </Card>
             </div>
 
             <div class="space-y-6 lg:sticky lg:top-6 lg:self-start">
@@ -83,6 +130,10 @@ const submit = () => {
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">Service pricing</span>
                             <span class="font-medium text-slate-900">{{ form.service_charge_is_inclusive ? 'Included in prices' : 'Added on bill' }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Tables</span>
+                            <span class="font-medium text-slate-900">{{ form.table_names.length }}</span>
                         </div>
                     </div>
 

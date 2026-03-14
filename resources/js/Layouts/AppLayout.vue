@@ -18,14 +18,26 @@ const currentPath = computed(() => {
     return url.split('?')[0];
 });
 
-const navigation = [
-    { name: 'Dashboard', href: '/' },
-    { name: 'Deliveries', href: '/orders' },
-    { name: 'Categories', href: '/categories' },
-    { name: 'Items', href: '/items' },
-    { name: 'Sales', href: '/sales' },
-    { name: 'Settings', href: '/settings' },
-];
+const isAdmin = computed(() => auth.value.user?.role === 'admin');
+
+const navigation = computed(() => {
+    const baseItems = [
+        { name: 'Dashboard', href: '/' },
+        { name: 'Deliveries', href: '/orders' },
+    ];
+
+    if (!isAdmin.value) {
+        return baseItems;
+    }
+
+    return [
+        ...baseItems,
+        { name: 'Categories', href: '/categories' },
+        { name: 'Items', href: '/items' },
+        { name: 'Sales', href: '/sales' },
+        { name: 'Settings', href: '/settings' },
+    ];
+});
 
 const pageDescriptions = {
     Dashboard: 'Run the dining room from a live table board and keep an eye on open delivery work.',

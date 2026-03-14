@@ -31,22 +31,24 @@ Route::middleware('auth')->group(function () {
     Route::put('orders/{order}', [OrderController::class, 'webUpdate'])->name('orders.update');
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 
-    // Categories
-    Route::get('categories', [CategoryController::class, 'webIndex'])->name('categories.index');
-    Route::post('categories', [CategoryController::class, 'webStore'])->name('categories.store');
-    Route::put('categories/{category}', [CategoryController::class, 'webUpdate'])->name('categories.update');
-    Route::delete('categories/{category}', [CategoryController::class, 'webDestroy'])->name('categories.destroy');
+    Route::middleware('admin')->group(function () {
+        // Categories
+        Route::get('categories', [CategoryController::class, 'webIndex'])->name('categories.index');
+        Route::post('categories', [CategoryController::class, 'webStore'])->name('categories.store');
+        Route::put('categories/{category}', [CategoryController::class, 'webUpdate'])->name('categories.update');
+        Route::delete('categories/{category}', [CategoryController::class, 'webDestroy'])->name('categories.destroy');
 
-    // Items
-    Route::get('items', [ItemController::class, 'webIndex'])->name('items.index');
-    Route::post('items', [ItemController::class, 'webStore'])->name('items.store');
-    Route::put('items/{item}', [ItemController::class, 'webUpdate'])->name('items.update');
-    Route::delete('items/{item}', [ItemController::class, 'webDestroy'])->name('items.destroy');
+        // Items
+        Route::get('items', [ItemController::class, 'webIndex'])->name('items.index');
+        Route::post('items', [ItemController::class, 'webStore'])->name('items.store');
+        Route::put('items/{item}', [ItemController::class, 'webUpdate'])->name('items.update');
+        Route::delete('items/{item}', [ItemController::class, 'webDestroy'])->name('items.destroy');
 
-    // Sales
-    Route::get('sales', [SaleController::class, 'webIndex'])->name('sales.index');
+        // Sales
+        Route::get('sales', [SaleController::class, 'webIndex'])->name('sales.index');
 
-    // Settings
-    Route::get('settings', [RestaurantSettingController::class, 'index'])->name('settings.index');
-    Route::put('settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
+        // Settings
+        Route::get('settings', [RestaurantSettingController::class, 'index'])->name('settings.index');
+        Route::put('settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
+    });
 });

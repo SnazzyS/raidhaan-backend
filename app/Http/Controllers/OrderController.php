@@ -431,7 +431,7 @@ class OrderController extends Controller
 
     private function tableNames(): array
     {
-        return config('restaurant.tables', []);
+        return RestaurantSetting::current()->resolvedTableNames();
     }
 
     private function tableOptions(): array

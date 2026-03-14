@@ -3,13 +3,14 @@
 namespace App\Http\Controllers;
 
 use App\Models\Order;
+use App\Models\RestaurantSetting;
 use Inertia\Inertia;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-        $tableNames = collect(config('restaurant.tables', []));
+        $tableNames = collect(RestaurantSetting::current()->resolvedTableNames());
 
         $activeTableOrders = Order::with('items')
             ->where('delivery_type', 'dine_in')
