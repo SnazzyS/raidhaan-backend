@@ -25,7 +25,7 @@ const emit = defineEmits(['update:modelValue']);
         <input
             :value="modelValue"
             @input="emit('update:modelValue', $event.target.value)"
-            class="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-100 disabled:bg-slate-50 disabled:text-slate-500"
+            class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 shadow-sm placeholder:text-slate-400 focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-100 disabled:bg-[#f7faf9] disabled:text-slate-500"
             :class="error ? 'border-rose-300 focus:border-rose-500 focus:ring-rose-100' : ''"
             v-bind="$attrs"
         >

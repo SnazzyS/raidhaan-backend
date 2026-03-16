@@ -95,13 +95,13 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-slate-50 text-slate-900">
-        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 backdrop-blur">
+    <div class="min-h-screen bg-[#f4f7f7] text-slate-900">
+        <header class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col gap-4 py-4">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-slate-900 text-sm font-semibold text-white">
+                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-600 text-sm font-semibold text-white">
                                 RP
                             </div>
                             <div>
@@ -119,7 +119,7 @@ const isActive = (href) => {
                                 href="/logout"
                                 method="post"
                                 as="button"
-                                class="inline-flex items-center rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:bg-slate-50"
+                                class="inline-flex items-center rounded-lg border border-slate-200 bg-[#f7faf9] px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
                             >
                                 Logout
                             </Link>
@@ -133,8 +133,8 @@ const isActive = (href) => {
                             :href="item.href"
                             class="rounded-lg px-3 py-2 text-sm font-medium transition"
                             :class="isActive(item.href)
-                                ? 'bg-slate-900 text-white'
-                                : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+                                ? 'bg-teal-600 text-white shadow-sm'
+                                : 'border border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800'"
                         >
                             {{ item.name }}
                         </Link>
@@ -143,7 +143,7 @@ const isActive = (href) => {
             </div>
         </header>
 
-        <section class="border-b border-slate-200 bg-white">
+        <section class="border-b border-slate-200/80 bg-white/80">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{{ title }}</h1>
                 <p class="mt-2 max-w-3xl text-sm text-slate-500">{{ description }}</p>
@@ -151,11 +151,11 @@ const isActive = (href) => {
         </section>
 
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <div v-if="flash.success" class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            <div v-if="flash.success" class="mb-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
                 {{ flash.success }}
             </div>
 
-            <div v-if="flash.error" class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div v-if="flash.error" class="mb-4 rounded-xl border border-rose-200 bg-rose-50/90 px-4 py-3 text-sm text-rose-700">
                 {{ flash.error }}
             </div>
 

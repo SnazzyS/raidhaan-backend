@@ -12,10 +12,10 @@ defineProps({
 </script>
 
 <template>
-    <section class="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
+    <section class="overflow-hidden rounded-xl border border-slate-200/90 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04)]">
         <div
             v-if="title || $slots.header || $slots.actions"
-            class="flex flex-col gap-3 border-b border-slate-200 px-5 py-4 sm:flex-row sm:items-start sm:justify-between"
+            class="flex flex-col gap-3 border-b border-slate-200/80 bg-[#fbfcfc] px-5 py-4 sm:flex-row sm:items-start sm:justify-between"
         >
             <div>
                 <slot name="header">

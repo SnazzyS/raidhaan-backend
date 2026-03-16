@@ -211,7 +211,7 @@ const submit = () => {
                                 v-for="item in filteredItems"
                                 :key="item.id"
                                 type="button"
-                                class="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-slate-300 hover:bg-slate-50"
+                                class="rounded-lg border border-slate-200 bg-white p-4 text-left transition hover:border-teal-200 hover:bg-teal-50/40"
                                 @click="addItem(item)"
                             >
                                 <p class="truncate text-sm font-medium text-slate-900">{{ item.name }}</p>
@@ -309,7 +309,7 @@ const submit = () => {
 
                     <Card title="Summary" description="Review the bill totals before saving. GST and service charge come from Settings.">
                         <template #actions>
-                            <Link href="/settings" class="text-sm font-medium text-slate-600 hover:text-slate-900">
+                            <Link href="/settings" class="text-sm font-medium text-teal-700 hover:text-teal-800">
                                 Open settings
                             </Link>
                         </template>
