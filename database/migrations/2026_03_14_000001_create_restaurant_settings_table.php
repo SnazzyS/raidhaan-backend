@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->boolean('gst_is_inclusive')->default(false);
             $table->decimal('service_charge_percentage', 5, 2)->default(0);
             $table->boolean('service_charge_is_inclusive')->default(false);
-            $table->timestamps();git 
+            $table->timestamps();
         });
     }
 

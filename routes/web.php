@@ -7,6 +7,7 @@ use App\Http\Controllers\ItemController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RestaurantSettingController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -50,5 +51,11 @@ Route::middleware('auth')->group(function () {
         // Settings
         Route::get('settings', [RestaurantSettingController::class, 'index'])->name('settings.index');
         Route::put('settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
+
+        // Users
+        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
+        Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
+        Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
+        Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
     });
 });

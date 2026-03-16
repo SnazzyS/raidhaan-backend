@@ -36,6 +36,7 @@ const navigation = computed(() => {
         { name: 'Items', href: '/items' },
         { name: 'Sales', href: '/sales' },
         { name: 'Settings', href: '/settings' },
+        { name: 'Users', href: '/users' },
     ];
 });
 
@@ -46,6 +47,7 @@ const pageDescriptions = {
     Items: 'Maintain item pricing and category assignment without extra clutter.',
     Sales: 'Review completed sales, payment mix, and date-filtered revenue.',
     Settings: 'Set the GST and service charge rules that should apply across the restaurant.',
+    Users: 'Create staff and admin accounts, update roles, and remove access when needed.',
     'Create Delivery': 'Capture delivery details, add items, and apply billing rules before dispatch.',
 };
 
