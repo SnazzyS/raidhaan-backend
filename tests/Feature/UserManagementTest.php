@@ -32,6 +32,28 @@ class UserManagementTest extends TestCase
         ]);
     }
 
+    public function test_created_user_email_is_normalized_to_lowercase(): void
+    {
+        $admin = User::factory()->create([
+            'role' => 'admin',
+        ]);
+
+        $response = $this->actingAs($admin)->post('/users', [
+            'name' => 'Upper Case User',
+            'email' => 'Staff@Example.COM',
+            'role' => 'staff',
+            'password' => 'password123',
+            'password_confirmation' => 'password123',
+        ]);
+
+        $response->assertRedirect();
+
+        $this->assertDatabaseHas('users', [
+            'email' => 'staff@example.com',
+            'role' => 'staff',
+        ]);
+    }
+
     public function test_staff_cannot_access_user_management(): void
     {
         $staff = User::factory()->create([

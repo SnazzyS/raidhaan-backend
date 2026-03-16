@@ -1,6 +1,7 @@
 <script setup>
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed } from 'vue';
+import logo from '@/assets/images/logo.png';
 
 const props = defineProps({
     title: {
@@ -101,9 +102,7 @@ const isActive = (href) => {
                 <div class="flex flex-col gap-4 py-4">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                         <div class="flex items-center gap-3">
-                            <div class="flex h-10 w-10 items-center justify-center rounded-lg bg-teal-600 text-sm font-semibold text-white">
-                                RP
-                            </div>
+                            <img :src="logo" alt="Raidhaan POS" class="h-10 w-10 rounded-lg object-cover" />
                             <div>
                                 <p class="text-sm font-semibold text-slate-900">Raidhaan POS</p>
                                 <p class="text-xs text-slate-500">Restaurant service and delivery management</p>
