@@ -219,6 +219,13 @@ class OrderController extends Controller
                 'max:100',
                 Rule::requiredIf($request->input('order.payment_method') === 'transfer'),
             ],
+            'order.discount_type' => ['nullable', Rule::in(['fixed', 'percentage'])],
+            'order.discount_value' => [
+                'nullable',
+                'numeric',
+                'min:0',
+                Rule::requiredIf(filled($request->input('order.discount_type'))),
+            ],
             'order.items' => ['required', 'array', 'min:1'],
             'order.items.*.item_id' => ['required', 'integer', 'exists:items,id'],
             'order.items.*.quantity' => ['required', 'integer', 'min:1'],
@@ -230,6 +237,18 @@ class OrderController extends Controller
         $validated['order']['transfer_reference_number'] = $validated['order']['payment_method'] === 'transfer'
             ? trim((string) ($validated['order']['transfer_reference_number'] ?? ''))
             : null;
+        $validated['order']['discount_type'] = filled($validated['order']['discount_type'] ?? null)
+            ? $validated['order']['discount_type']
+            : null;
+        $validated['order']['discount_value'] = $validated['order']['discount_type']
+            ? round((float) ($validated['order']['discount_value'] ?? 0), 2)
+            : 0;
+
+        if ($validated['order']['discount_type'] === 'percentage' && $validated['order']['discount_value'] > 100) {
+            throw ValidationException::withMessages([
+                'order.discount_value' => 'Percentage discounts cannot exceed 100%.',
+            ]);
+        }
 
         $this->ensureTableAvailability(
             $validated['order']['delivery_type'],
@@ -254,6 +273,8 @@ class OrderController extends Controller
             $totals = $this->calculateTotals(
                 $itemsById,
                 $orderData['items'],
+                $orderData['discount_type'] ?? null,
+                (float) ($orderData['discount_value'] ?? 0),
                 (float) $settings->gst_percentage,
                 (bool) $settings->gst_is_inclusive,
                 (float) $settings->service_charge_percentage,
@@ -274,6 +295,9 @@ class OrderController extends Controller
                 'payment_method' => $orderData['payment_method'],
                 'transfer_reference_number' => $orderData['transfer_reference_number'],
                 'subtotal_amount' => $totals['subtotal_amount'],
+                'discount_type' => $orderData['discount_type'],
+                'discount_value' => $orderData['discount_value'],
+                'discount_amount' => $totals['discount_amount'],
                 'gst_percentage' => $settings->gst_percentage,
                 'gst_amount' => $totals['gst_amount'],
                 'gst_is_inclusive' => $settings->gst_is_inclusive,
@@ -305,6 +329,8 @@ class OrderController extends Controller
     private function calculateTotals(
         Collection $itemsById,
         array $selectedItems,
+        ?string $discountType,
+        float $discountValue,
         float $gstPercentage,
         bool $gstIsInclusive,
         float $serviceChargePercentage,
@@ -316,14 +342,22 @@ class OrderController extends Controller
             return (float) $item->price * (int) $selectedItem['quantity'];
         }), 2);
 
+        $discountAmount = match ($discountType) {
+            'percentage' => round($subtotalAmount * ($discountValue / 100), 2),
+            'fixed' => round($discountValue, 2),
+            default => 0,
+        };
+        $discountAmount = min($discountAmount, $subtotalAmount);
+        $discountedSubtotalAmount = round($subtotalAmount - $discountAmount, 2);
+
         $inclusiveRate = ($gstIsInclusive ? $gstPercentage : 0) + ($serviceChargeIsInclusive ? $serviceChargePercentage : 0);
         $baseAmount = $inclusiveRate > 0
-            ? round($subtotalAmount / (1 + ($inclusiveRate / 100)), 2)
-            : $subtotalAmount;
+            ? round($discountedSubtotalAmount / (1 + ($inclusiveRate / 100)), 2)
+            : $discountedSubtotalAmount;
         $gstAmount = round($baseAmount * ($gstPercentage / 100), 2);
         $serviceChargeAmount = round($baseAmount * ($serviceChargePercentage / 100), 2);
         $totalAmount = round(
-            $subtotalAmount
+            $discountedSubtotalAmount
             + ($gstIsInclusive ? 0 : $gstAmount)
             + ($serviceChargeIsInclusive ? 0 : $serviceChargeAmount),
             2
@@ -331,6 +365,8 @@ class OrderController extends Controller
 
         return [
             'subtotal_amount' => $subtotalAmount,
+            'discount_amount' => $discountAmount,
+            'discounted_subtotal_amount' => $discountedSubtotalAmount,
             'gst_amount' => $gstAmount,
             'service_charge_amount' => $serviceChargeAmount,
             'total_amount' => $totalAmount,

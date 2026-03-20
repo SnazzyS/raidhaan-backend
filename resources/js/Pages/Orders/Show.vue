@@ -31,6 +31,17 @@ const canVoid = computed(() => isTableBill.value && props.order.bill_printed_at 
 
 const formatCurrency = (value) => `MVR ${Number(value || 0).toLocaleString()}`;
 const formatChargeLabel = (label, percentage, isInclusive) => `${label} (${Number(percentage || 0).toFixed(2)}%${isInclusive ? ', included' : ''})`;
+const discountDisplay = computed(() => {
+    if (!props.order.discount_type) {
+        return 'No discount';
+    }
+
+    if (props.order.discount_type === 'percentage') {
+        return `${Number(props.order.discount_value || 0).toFixed(2)}%`;
+    }
+
+    return formatCurrency(props.order.discount_value);
+});
 
 const requestStatusChange = (newStatus) => {
     const messages = {
@@ -117,6 +128,10 @@ const handleReceiptPrint = () => {
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">Menu total</span>
                             <span class="font-medium text-slate-900">{{ formatCurrency(order.subtotal_amount) }}</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-slate-500">Discount</span>
+                            <span class="font-medium text-slate-900">- {{ formatCurrency(order.discount_amount) }}</span>
                         </div>
                         <div class="flex items-center justify-between">
                             <span class="text-slate-500">{{ formatChargeLabel('GST', order.gst_percentage, order.gst_is_inclusive) }}</span>
@@ -209,6 +224,10 @@ const handleReceiptPrint = () => {
                         <div class="flex items-start justify-between gap-4">
                             <span class="text-slate-500">Payment</span>
                             <span class="capitalize font-medium text-slate-900">{{ order.payment_method }}</span>
+                        </div>
+                        <div class="flex items-start justify-between gap-4">
+                            <span class="text-slate-500">Discount</span>
+                            <span class="font-medium text-right text-slate-900">{{ discountDisplay }}</span>
                         </div>
                         <div v-if="order.transfer_reference_number" class="flex items-start justify-between gap-4">
                             <span class="text-slate-500">Reference</span>

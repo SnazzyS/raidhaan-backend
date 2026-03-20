@@ -41,6 +41,8 @@ const form = useForm({
         table_name: props.defaults.table_name || '',
         payment_method: 'cash',
         transfer_reference_number: '',
+        discount_type: '',
+        discount_value: '',
         items: [],
     },
 });
@@ -70,6 +72,11 @@ const paymentOptions = [
     { value: 'card', label: 'Card' },
 ];
 
+const discountTypeOptions = [
+    { value: 'percentage', label: 'Percentage' },
+    { value: 'fixed', label: 'Fixed Amount' },
+];
+
 const filteredItems = computed(() => {
     const query = searchTerm.value.trim().toLowerCase();
 
@@ -97,6 +104,8 @@ const backHref = computed(() => (isTableBill.value ? '/' : '/orders'));
 
 const totals = computed(() => calculateBillTotals(
     form.order.items,
+    form.order.discount_type || null,
+    form.order.discount_value || 0,
     props.settings.gst_percentage,
     props.settings.gst_is_inclusive,
     props.settings.service_charge_percentage,
@@ -109,6 +118,12 @@ const totalQuantity = computed(() => form.order.items.reduce((sum, item) => sum 
 watch(() => form.order.payment_method, (paymentMethod) => {
     if (paymentMethod !== 'transfer') {
         form.order.transfer_reference_number = '';
+    }
+});
+
+watch(() => form.order.discount_type, (discountType) => {
+    if (!discountType) {
+        form.order.discount_value = '';
     }
 });
 
@@ -148,6 +163,7 @@ const updateQuantity = (index, quantity) => {
 };
 
 const chargeLabel = (label, percentage, isInclusive) => `${label} (${Number(percentage || 0).toFixed(2)}%${isInclusive ? ', included' : ''})`;
+const discountValueLabel = computed(() => (form.order.discount_type === 'percentage' ? 'Discount %' : 'Discount Amount'));
 
 const submit = () => {
     form.post('/orders');
@@ -294,6 +310,24 @@ const submit = () => {
                                 placeholder="Reference number"
                                 :error="form.errors['order.transfer_reference_number']"
                             />
+                            <Select
+                                v-model="form.order.discount_type"
+                                label="Discount"
+                                :options="discountTypeOptions"
+                                placeholder="No discount"
+                                :error="form.errors['order.discount_type']"
+                            />
+                            <Input
+                                v-if="form.order.discount_type"
+                                v-model="form.order.discount_value"
+                                :label="discountValueLabel"
+                                type="number"
+                                min="0"
+                                :max="form.order.discount_type === 'percentage' ? 100 : undefined"
+                                step="0.01"
+                                :placeholder="form.order.discount_type === 'percentage' ? '0 to 100' : '0.00'"
+                                :error="form.errors['order.discount_value']"
+                            />
                         </div>
                     </Card>
 
@@ -315,6 +349,10 @@ const submit = () => {
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-500">Menu total</span>
                                 <span class="font-medium text-slate-900">MVR {{ totals.subtotalAmount.toLocaleString() }}</span>
+                            </div>
+                            <div class="flex items-center justify-between">
+                                <span class="text-slate-500">Discount</span>
+                                <span class="font-medium text-slate-900">- MVR {{ totals.discountAmount.toLocaleString() }}</span>
                             </div>
                             <div class="flex items-center justify-between">
                                 <span class="text-slate-500">{{ chargeLabel('GST', props.settings.gst_percentage, props.settings.gst_is_inclusive) }}</span>

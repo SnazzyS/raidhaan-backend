@@ -164,6 +164,15 @@
       </div>
       <div class="total-row">
         <span class="label">
+          Discount
+          @if($order->discount_type)
+            ({{ $order->discount_type === 'percentage' ? number_format($order->discount_value, 2).'%' : 'MVR '.number_format($order->discount_value, 2) }})
+          @endif
+        </span>
+        <span class="value">- MVR {{ number_format($order->discount_amount, 2) }}</span>
+      </div>
+      <div class="total-row">
+        <span class="label">
           GST ({{ number_format($order->gst_percentage, 2) }}%{{ $order->gst_is_inclusive ? ', included' : '' }})
         </span>
         <span class="value">
