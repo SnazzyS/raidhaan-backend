@@ -1,8 +1,11 @@
 <?php
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Http\Request;
+use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 
 $app = Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -15,12 +18,26 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
         ]);
-        $middleware->alias([
-           'admin' => \App\Http\Middleware\AdminMiddleware::class
-           ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        $renderUnauthorized = function (string $message, Request $request) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                ], 403);
+            }
+
+            return redirect('/')
+                ->with('error', $message);
+        };
+
+        $exceptions->render(function (AuthorizationException $exception, Request $request) use ($renderUnauthorized) {
+            return $renderUnauthorized($exception->getMessage() ?: 'Admin access required.', $request);
+        });
+
+        $exceptions->render(function (AccessDeniedHttpException $exception, Request $request) use ($renderUnauthorized) {
+            return $renderUnauthorized('Admin access required.', $request);
+        });
     })->create();
 
 if ($storagePath = env('APP_STORAGE_PATH')) {

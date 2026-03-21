@@ -2,70 +2,70 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\Categories\CreateCategory;
+use App\Actions\Categories\DeleteCategory;
+use App\Actions\Categories\ListCategories;
+use App\Actions\Categories\UpdateCategory;
 use App\Http\Requests\CategoryRequest;
 use App\Models\Category;
 use Inertia\Inertia;
 
 class CategoryController extends Controller
 {
-    // API Methods
-    public function index()
+    public function index(ListCategories $listCategories)
     {
-        return response()->json(Category::with('items')->get());
+        return response()->json($listCategories->handle(withItems: true));
     }
 
-    public function store(CategoryRequest $request)
+    public function store(CategoryRequest $request, CreateCategory $createCategory)
     {
-        Category::create($request->validated());
+        $createCategory->handle($request->validated());
 
         return response()->json([
-                'message' => 'Category created'
-            ], 201);
+            'message' => 'Category created',
+        ], 201);
     }
 
-    public function update(Category $category, CategoryRequest $request)
+    public function update(CategoryRequest $request, Category $category, UpdateCategory $updateCategory)
     {
-        $category->update($request->validated());
+        $updateCategory->handle($category, $request->validated());
 
         return response()->json([
-            'message' => 'Category updated successfully'
+            'message' => 'Category updated successfully',
         ], 200);
     }
 
-    public function destroy(Category $category)
+    public function destroy(Category $category, DeleteCategory $deleteCategory)
     {
-        $category->delete();
+        $deleteCategory->handle($category);
 
         return response()->json(['message' => 'Category deleted successfully']);
     }
 
-    // Web/Inertia Methods
-    public function webIndex()
+    public function webIndex(ListCategories $listCategories)
     {
         return Inertia::render('Categories/Index', [
-            'categories' => Category::withCount('items')
-                ->orderBy('name')
-                ->get(),
+            'categories' => $listCategories->handle(withCount: true),
         ]);
     }
 
-    public function webStore(CategoryRequest $request)
+    public function webStore(CategoryRequest $request, CreateCategory $createCategory)
     {
-        Category::create($request->validated());
+        $createCategory->handle($request->validated());
 
         return redirect()->back()->with('success', 'Category created successfully');
     }
 
-    public function webUpdate(Category $category, CategoryRequest $request)
+    public function webUpdate(CategoryRequest $request, Category $category, UpdateCategory $updateCategory)
     {
-        $category->update($request->validated());
+        $updateCategory->handle($category, $request->validated());
 
         return redirect()->back()->with('success', 'Category updated successfully');
     }
 
-    public function webDestroy(Category $category)
+    public function webDestroy(Category $category, DeleteCategory $deleteCategory)
     {
-        $category->delete();
+        $deleteCategory->handle($category);
 
         return redirect()->back()->with('success', 'Category deleted successfully');
     }

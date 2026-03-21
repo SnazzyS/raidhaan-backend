@@ -8,6 +8,11 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\RestaurantSettingController;
 use App\Http\Controllers\SaleController;
 use App\Http\Controllers\UserManagementController;
+use App\Models\Category;
+use App\Models\Item;
+use App\Models\RestaurantSetting;
+use App\Models\Sale;
+use App\Models\User;
 use Illuminate\Support\Facades\Route;
 
 // Guest routes
@@ -32,30 +37,28 @@ Route::middleware('auth')->group(function () {
     Route::put('orders/{order}', [OrderController::class, 'webUpdate'])->name('orders.update');
     Route::patch('orders/{order}/status', [OrderController::class, 'updateStatus'])->name('orders.status');
 
-    Route::middleware('admin')->group(function () {
-        // Categories
-        Route::get('categories', [CategoryController::class, 'webIndex'])->name('categories.index');
-        Route::post('categories', [CategoryController::class, 'webStore'])->name('categories.store');
-        Route::put('categories/{category}', [CategoryController::class, 'webUpdate'])->name('categories.update');
-        Route::delete('categories/{category}', [CategoryController::class, 'webDestroy'])->name('categories.destroy');
+    // Categories
+    Route::get('categories', [CategoryController::class, 'webIndex'])->can('viewAny', Category::class)->name('categories.index');
+    Route::post('categories', [CategoryController::class, 'webStore'])->can('create', Category::class)->name('categories.store');
+    Route::put('categories/{category}', [CategoryController::class, 'webUpdate'])->can('update', 'category')->name('categories.update');
+    Route::delete('categories/{category}', [CategoryController::class, 'webDestroy'])->can('delete', 'category')->name('categories.destroy');
 
-        // Items
-        Route::get('items', [ItemController::class, 'webIndex'])->name('items.index');
-        Route::post('items', [ItemController::class, 'webStore'])->name('items.store');
-        Route::put('items/{item}', [ItemController::class, 'webUpdate'])->name('items.update');
-        Route::delete('items/{item}', [ItemController::class, 'webDestroy'])->name('items.destroy');
+    // Items
+    Route::get('items', [ItemController::class, 'webIndex'])->can('viewAny', Item::class)->name('items.index');
+    Route::post('items', [ItemController::class, 'webStore'])->can('create', Item::class)->name('items.store');
+    Route::put('items/{item}', [ItemController::class, 'webUpdate'])->can('update', 'item')->name('items.update');
+    Route::delete('items/{item}', [ItemController::class, 'webDestroy'])->can('delete', 'item')->name('items.destroy');
 
-        // Sales
-        Route::get('sales', [SaleController::class, 'webIndex'])->name('sales.index');
+    // Sales
+    Route::get('sales', [SaleController::class, 'webIndex'])->can('viewAny', Sale::class)->name('sales.index');
 
-        // Settings
-        Route::get('settings', [RestaurantSettingController::class, 'index'])->name('settings.index');
-        Route::put('settings', [RestaurantSettingController::class, 'update'])->name('settings.update');
+    // Settings
+    Route::get('settings', [RestaurantSettingController::class, 'index'])->can('manage', RestaurantSetting::class)->name('settings.index');
+    Route::put('settings', [RestaurantSettingController::class, 'update'])->can('manage', RestaurantSetting::class)->name('settings.update');
 
-        // Users
-        Route::get('users', [UserManagementController::class, 'index'])->name('users.index');
-        Route::post('users', [UserManagementController::class, 'store'])->name('users.store');
-        Route::put('users/{user}', [UserManagementController::class, 'update'])->name('users.update');
-        Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->name('users.destroy');
-    });
+    // Users
+    Route::get('users', [UserManagementController::class, 'index'])->can('viewAny', User::class)->name('users.index');
+    Route::post('users', [UserManagementController::class, 'store'])->can('create', User::class)->name('users.store');
+    Route::put('users/{user}', [UserManagementController::class, 'update'])->can('update', 'user')->name('users.update');
+    Route::delete('users/{user}', [UserManagementController::class, 'destroy'])->can('delete', 'user')->name('users.destroy');
 });

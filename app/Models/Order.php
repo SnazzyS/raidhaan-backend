@@ -54,9 +54,4 @@ class Order extends Model
             ->withPivot('quantity', 'price')
             ->withTimestamps();
     }
-
-    public function isTableBill(): bool
-    {
-        return $this->delivery_type === 'dine_in' && filled($this->table_name);
-    }
 }

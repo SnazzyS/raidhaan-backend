@@ -2,76 +2,59 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Item;
-use App\Models\Category;
+use App\Actions\Items\CreateItem;
+use App\Actions\Items\DeleteItem;
+use App\Actions\Items\GetItemsPageData;
+use App\Actions\Items\UpdateItem;
 use App\Http\Requests\ItemRequest;
-use Illuminate\Http\Request;
+use App\Models\Item;
 use Inertia\Inertia;
 
 class ItemController extends Controller
 {
-    // API Methods
-    public function store(ItemRequest $request)
+    public function store(ItemRequest $request, CreateItem $createItem)
     {
-        Item::create($request->validated());
+        $createItem->handle($request->validated());
 
         return response()->json(['message' => 'Item created'], 201);
     }
 
-    public function update(Item $item, ItemRequest $request)
+    public function update(ItemRequest $request, Item $item, UpdateItem $updateItem)
     {
-        $item->update($request->validated());
+        $updateItem->handle($item, $request->validated());
 
         return response()->json(['message' => 'Item updated successfully']);
     }
 
-    public function destroy(Item $item)
+    public function destroy(Item $item, DeleteItem $deleteItem)
     {
-        $item->delete();
+        $deleteItem->handle($item);
 
         return response()->json(['message' => 'Item deleted successfully']);
     }
 
-    // Web/Inertia Methods
-    public function webIndex()
+    public function webIndex(GetItemsPageData $getItemsPageData)
     {
-        return Inertia::render('Items/Index', [
-            'items' => Item::with('category')
-                ->orderBy('name')
-                ->get(),
-            'categories' => Category::orderBy('name')->get(),
-        ]);
+        return Inertia::render('Items/Index', $getItemsPageData->handle());
     }
 
-    public function webStore(Request $request)
+    public function webStore(ItemRequest $request, CreateItem $createItem)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-        ]);
-
-        Item::create($validated);
+        $createItem->handle($request->validated());
 
         return redirect()->back()->with('success', 'Item created successfully');
     }
 
-    public function webUpdate(Item $item, Request $request)
+    public function webUpdate(ItemRequest $request, Item $item, UpdateItem $updateItem)
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'price' => 'required|numeric|min:0',
-            'category_id' => 'required|exists:categories,id',
-        ]);
-
-        $item->update($validated);
+        $updateItem->handle($item, $request->validated());
 
         return redirect()->back()->with('success', 'Item updated successfully');
     }
 
-    public function webDestroy(Item $item)
+    public function webDestroy(Item $item, DeleteItem $deleteItem)
     {
-        $item->delete();
+        $deleteItem->handle($item);
 
         return redirect()->back()->with('success', 'Item deleted successfully');
     }

@@ -55,14 +55,4 @@ class User extends Authenticatable
             set: fn ($value) => strtolower(trim((string) $value)),
         );
     }
-
-    public function isAdmin(): bool
-    {
-        return $this->role === 'admin';
-    }
-
-    public function isStaff(): bool
-    {
-        return $this->role === 'staff';
-    }
 }

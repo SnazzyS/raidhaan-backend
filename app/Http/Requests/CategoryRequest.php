@@ -8,19 +8,18 @@ use Illuminate\Support\Str;
 
 class CategoryRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return true;
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
-     */
+    protected function prepareForValidation(): void
+    {
+        $this->merge([
+            'name' => trim((string) $this->input('name')),
+        ]);
+    }
+
     public function rules(): array
     {
         $categoryId = $this->route('category') ? $this->route('category')->id : null;
@@ -31,7 +30,7 @@ class CategoryRequest extends FormRequest
                 'string',
                 'max:255',
                 function (string $attribute, mixed $value, callable $fail) use ($categoryId) {
-                    if (!is_string($value) || $value === '') {
+                    if (! is_string($value) || $value === '') {
                         return;
                     }
 
