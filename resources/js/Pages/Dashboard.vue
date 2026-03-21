@@ -23,12 +23,11 @@ const formatCurrency = (value) => `MVR ${Number(value || 0).toLocaleString()}`;
     <AppLayout title="Dashboard">
         <Head title="Dashboard" />
 
-        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
+        <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             <StatCard title="Tables" :value="stats.tableCount || 0" />
             <StatCard title="Occupied" :value="stats.occupiedCount || 0" />
             <StatCard title="Available" :value="stats.availableCount || 0" />
             <StatCard title="Bills Printed" :value="stats.printedCount || 0" />
-            <StatCard title="Revenue" :value="`MVR ${(stats.totalRevenue || 0).toLocaleString()}`" />
         </div>
 
         <Card title="Dining Room Tables" description="Each table opens into an active guest bill or starts a new one when empty.">

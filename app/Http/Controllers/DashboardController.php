@@ -45,7 +45,6 @@ class DashboardController extends Controller
             'occupiedCount' => $tables->where('status', '!=', 'available')->count(),
             'availableCount' => $tables->where('status', 'available')->count(),
             'printedCount' => $tables->where('status', 'printed')->count(),
-            'totalRevenue' => Order::where('status', 'completed')->sum('total_amount'),
         ];
 
         return Inertia::render('Dashboard', [
