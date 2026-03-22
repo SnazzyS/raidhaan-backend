@@ -69,12 +69,12 @@ const removeTable = (index) => {
                     </div>
 
                     <div class="mt-4 space-y-4">
-                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-[#f7faf9] px-4 py-3 text-sm text-slate-700">
-                            <input v-model="form.gst_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-200">
+                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                            <input v-model="form.gst_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-200">
                             <span>GST is already included in menu prices.</span>
                         </label>
-                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-[#f7faf9] px-4 py-3 text-sm text-slate-700">
-                            <input v-model="form.service_charge_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-200">
+                        <label class="flex items-start gap-3 rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                            <input v-model="form.service_charge_is_inclusive" type="checkbox" class="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-200">
                             <span>Service charge is already included in menu prices.</span>
                         </label>
                     </div>

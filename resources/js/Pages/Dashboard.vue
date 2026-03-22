@@ -36,7 +36,7 @@ const formatCurrency = (value) => `MVR ${Number(value || 0).toLocaleString()}`;
                     v-for="table in tables"
                     :key="table.name"
                     :href="table.href"
-                    class="group block rounded-2xl border border-slate-200 bg-white p-5 shadow-[0_1px_2px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:border-teal-200 hover:bg-teal-50/40 hover:shadow-md"
+                    class="group block rounded-2xl border border-slate-200 bg-white p-5 transition hover:border-indigo-300 hover:bg-slate-50"
                 >
                     <div class="flex items-start justify-between gap-3">
                         <div>

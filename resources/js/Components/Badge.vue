@@ -13,12 +13,12 @@ const props = defineProps({
 });
 
 const variants = {
-    default: 'border-slate-200 bg-[#f6f8f8] text-slate-700',
-    primary: 'border-teal-200 bg-teal-50 text-teal-800',
-    success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
-    warning: 'border-amber-200 bg-amber-50 text-amber-700',
-    danger: 'border-rose-200 bg-rose-50 text-rose-700',
-    info: 'border-sky-200 bg-sky-50 text-sky-700',
+    default: 'bg-slate-100 text-slate-700',
+    primary: 'bg-indigo-50 text-indigo-700',
+    success: 'bg-emerald-50 text-emerald-700',
+    warning: 'bg-amber-50 text-amber-800',
+    danger: 'bg-rose-50 text-rose-700',
+    info: 'bg-sky-50 text-sky-700',
 };
 
 const statusMap = {

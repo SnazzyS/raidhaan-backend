@@ -96,8 +96,8 @@ const isActive = (href) => {
 </script>
 
 <template>
-    <div class="min-h-screen bg-[#f4f7f7] text-slate-900">
-        <header class="sticky top-0 z-20 border-b border-slate-200/80 bg-white/90 backdrop-blur">
+    <div class="min-h-screen bg-slate-50 text-slate-900">
+        <header class="sticky top-0 z-20 border-b border-slate-200 bg-white">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
                 <div class="flex flex-col gap-4 py-4">
                     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -118,7 +118,7 @@ const isActive = (href) => {
                                 href="/logout"
                                 method="post"
                                 as="button"
-                                class="inline-flex items-center rounded-lg border border-slate-200 bg-[#f7faf9] px-4 py-2 text-sm font-medium text-slate-700 shadow-sm transition hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800"
+                                class="inline-flex items-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                             >
                                 Logout
                             </Link>
@@ -132,8 +132,8 @@ const isActive = (href) => {
                             :href="item.href"
                             class="rounded-lg px-3 py-2 text-sm font-medium transition"
                             :class="isActive(item.href)
-                                ? 'bg-teal-600 text-white shadow-sm'
-                                : 'border border-slate-200 bg-white text-slate-600 hover:border-teal-200 hover:bg-teal-50 hover:text-teal-800'"
+                                ? 'bg-indigo-600 text-white'
+                                : 'bg-transparent text-slate-600 hover:bg-slate-100 hover:text-slate-900'"
                         >
                             {{ item.name }}
                         </Link>
@@ -142,7 +142,7 @@ const isActive = (href) => {
             </div>
         </header>
 
-        <section class="border-b border-slate-200/80 bg-white/80">
+        <section class="border-b border-slate-200 bg-white">
             <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
                 <h1 class="text-2xl font-semibold tracking-tight text-slate-900 sm:text-3xl">{{ title }}</h1>
                 <p class="mt-2 max-w-3xl text-sm text-slate-500">{{ description }}</p>
@@ -150,7 +150,7 @@ const isActive = (href) => {
         </section>
 
         <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-            <div v-if="flash.success" class="mb-4 rounded-xl border border-teal-200 bg-teal-50 px-4 py-3 text-sm text-teal-800">
+            <div v-if="flash.success" class="mb-4 rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
                 {{ flash.success }}
             </div>
 
